@@ -33,6 +33,7 @@ export function AppLayout() {
         <Outlet />
       </main>
 
+      {/* Mobile bottom nav — Grocery + Library only (Dashboard is desktop-only) */}
       <nav className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
         <div className="flex">
           <NavLink to="/grocery" className={mobileLink}>
@@ -42,10 +43,6 @@ export function AppLayout() {
           <NavLink to="/library" className={mobileLink}>
             <BookOpen className="h-5 w-5" />
             Library
-          </NavLink>
-          <NavLink to="/" end className={mobileLink}>
-            <LayoutDashboard className="h-5 w-5" />
-            Dashboard
           </NavLink>
         </div>
       </nav>
