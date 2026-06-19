@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -23,7 +23,8 @@ import {
   type GroceryItemFormValues,
 } from "@/lib/zod-schemas";
 import { useCategories } from "../hooks/use-categories";
-import type { GroceryItem } from "@/types";
+import { useLibraryStore } from "@/features/library/library.store";
+import type { GroceryItem, LibraryItem } from "@/types";
 
 interface Props {
   open: boolean;
@@ -41,6 +42,9 @@ export function GroceryForm({
   title = "Add Item",
 }: Props) {
   const { categories } = useCategories();
+  const libraryItems = useLibraryStore((s) => s.items);
+  const [suggestions, setSuggestions] = useState<LibraryItem[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const {
     register,
@@ -55,6 +59,7 @@ export function GroceryForm({
   });
 
   const categoryId = watch("category_id");
+  const nameValue = watch("name");
 
   useEffect(() => {
     if (defaultValues) {
@@ -70,8 +75,34 @@ export function GroceryForm({
     }
   }, [defaultValues, reset]);
 
+  useEffect(() => {
+    if (!nameValue || defaultValues) {
+      setSuggestions([]);
+      return;
+    }
+    const q = nameValue.toLowerCase();
+    const matches = libraryItems
+      .filter((i) => i.name.toLowerCase().includes(q))
+      .sort((a, b) => b.times_added - a.times_added)
+      .slice(0, 5);
+    setSuggestions(matches);
+    setShowSuggestions(matches.length > 0);
+  }, [nameValue, libraryItems, defaultValues]);
+
+  const applySuggestion = (item: LibraryItem) => {
+    setValue("name", item.name);
+    setValue("unit", item.unit ?? "");
+    if (item.estimated_price != null)
+      setValue("estimated_price", item.estimated_price);
+    if (item.store) setValue("store", item.store);
+    if (item.notes) setValue("notes", item.notes);
+    setShowSuggestions(false);
+  };
+
   const handleClose = () => {
     reset();
+    setSuggestions([]);
+    setShowSuggestions(false);
     onClose();
   };
 
@@ -89,11 +120,38 @@ export function GroceryForm({
         <form onSubmit={handleSubmit(submit)} className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="item-name">Name *</Label>
-            <Input
-              id="item-name"
-              {...register("name")}
-              placeholder="e.g. Whole milk"
-            />
+            <div className="relative">
+              <Input
+                id="item-name"
+                {...register("name")}
+                placeholder="e.g. Whole milk"
+                autoComplete="off"
+                onFocus={() =>
+                  suggestions.length > 0 && setShowSuggestions(true)
+                }
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              />
+              {showSuggestions && (
+                <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border bg-popover shadow-md">
+                  {suggestions.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onMouseDown={() => applySuggestion(item)}
+                      className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent first:rounded-t-lg last:rounded-b-lg"
+                    >
+                      <span className="font-medium">{item.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {item.unit && `${item.unit} · `}
+                        {item.estimated_price != null &&
+                          `$${item.estimated_price.toFixed(2)} · `}
+                        added {item.times_added}×
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             {errors.name && (
               <p className="text-sm text-red-500">{errors.name.message}</p>
             )}

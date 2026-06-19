@@ -1,9 +1,12 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { ShoppingCart, LayoutDashboard } from "lucide-react";
+import { ShoppingCart, LayoutDashboard, BookOpen } from "lucide-react";
 
 export function AppLayout() {
-  const navLink = ({ isActive }: { isActive: boolean }) =>
+  const desktopLink = ({ isActive }: { isActive: boolean }) =>
     `text-sm font-medium transition-colors ${isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`;
+
+  const mobileLink = ({ isActive }: { isActive: boolean }) =>
+    `flex flex-1 flex-col items-center gap-1 py-3 text-xs transition-colors ${isActive ? "text-foreground" : "text-muted-foreground"}`;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -13,10 +16,13 @@ export function AppLayout() {
             🛒 Kitchen Companion
           </span>
           <nav className="hidden gap-4 md:flex">
-            <NavLink to="/grocery" className={navLink}>
+            <NavLink to="/grocery" className={desktopLink}>
               Grocery
             </NavLink>
-            <NavLink to="/" end className={navLink}>
+            <NavLink to="/library" className={desktopLink}>
+              Library
+            </NavLink>
+            <NavLink to="/" end className={desktopLink}>
               Dashboard
             </NavLink>
           </nav>
@@ -29,22 +35,15 @@ export function AppLayout() {
 
       <nav className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
         <div className="flex">
-          <NavLink
-            to="/grocery"
-            className={({ isActive }) =>
-              `flex flex-1 flex-col items-center gap-1 py-3 text-xs transition-colors ${isActive ? "text-foreground" : "text-muted-foreground"}`
-            }
-          >
+          <NavLink to="/grocery" className={mobileLink}>
             <ShoppingCart className="h-5 w-5" />
             Grocery
           </NavLink>
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `flex flex-1 flex-col items-center gap-1 py-3 text-xs transition-colors ${isActive ? "text-foreground" : "text-muted-foreground"}`
-            }
-          >
+          <NavLink to="/library" className={mobileLink}>
+            <BookOpen className="h-5 w-5" />
+            Library
+          </NavLink>
+          <NavLink to="/" end className={mobileLink}>
             <LayoutDashboard className="h-5 w-5" />
             Dashboard
           </NavLink>

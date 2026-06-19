@@ -78,3 +78,14 @@ export interface PriceHistory {
 }
 
 export type SortBy = "name" | "category" | "created_at";
+
+export interface LibraryItem {
+  id: string;
+  name: string;
+  unit: string;
+  estimated_price: number | null;
+  store: string | null;
+  notes: string | null;
+  times_added: number;
+  last_added: string;
+}

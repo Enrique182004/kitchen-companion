@@ -6,6 +6,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthPage } from "@/app/AuthPage";
 import { GroceryListPage } from "@/app/GroceryListPage";
 import { DashboardPage } from "@/app/DashboardPage";
+import { LibraryPage } from "@/app/LibraryPage";
 import { useGroceryStore } from "@/features/grocery/grocery.store";
 import type { GroceryItem } from "@/types";
 
@@ -121,6 +122,7 @@ export function App() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/grocery" element={<GroceryListPage />} />
+          <Route path="/library" element={<LibraryPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/grocery" replace />} />
