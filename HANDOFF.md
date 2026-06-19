@@ -102,6 +102,7 @@ When `VITE_SUPABASE_URL` is not set:
 | 19  | GroceryListPage              | src/app/GroceryListPage.tsx                                    |
 | 20  | Dashboard                    | src/app/DashboardPage.tsx                                      |
 | 21  | **Item Library**             | src/features/library/library.store.ts, src/app/LibraryPage.tsx |
+| 22  | **Library create/edit**      | src/features/library/components/LibraryForm.tsx                |
 
 **Tests: 31 passing across 7 test files**
 
