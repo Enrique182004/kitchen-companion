@@ -19,11 +19,10 @@ Full-stack grocery/kitchen management PWA:
 ## Specs & Plans
 
 - Spec: `docs/superpowers/specs/2026-06-18-kitchen-companion-spec1-design.md`
-- Plan: `docs/superpowers/plans/2026-06-18-kitchen-companion-spec1.md`
 
 ---
 
-## Completed Tasks (committed to git)
+## Completed Tasks (all committed to git)
 
 | Task | Status | Description                                                                                                               |
 | ---- | ------ | ------------------------------------------------------------------------------------------------------------------------- |
@@ -37,57 +36,36 @@ Full-stack grocery/kitchen management PWA:
 | 8    | ✅     | Grocery service (`src/features/grocery/services/grocery.service.ts`) + Supabase mock + tests — 5/5 passing                |
 | 9    | ✅     | `use-grocery-totals` hook + tests — 4/4 passing                                                                           |
 | 10   | ✅     | `use-filtered-items` hook + tests — 4/4 passing                                                                           |
+| 11   | ✅     | `use-grocery-list` hook (realtime Supabase subscription)                                                                  |
+| 12   | ✅     | `use-categories` hook (fetches + seeds 11 defaults if empty)                                                              |
+| 13   | ✅     | `use-auth` hook (signIn, signUp, signInWithGoogle, signOut)                                                               |
+| 14   | ✅     | Auth components: GoogleButton, LoginForm, SignupForm, AuthPage                                                            |
+| 15   | ✅     | Layouts + Router: AuthLayout, AppLayout, ProtectedRoute, App.tsx, main.tsx                                                |
+| 16   | ✅     | GroceryForm (dialog modal, RHF + Zod, add + edit)                                                                         |
+| 17   | ✅     | GroceryItemRow + 5 tests passing                                                                                          |
+| 18   | ✅     | CategoryFilter + TotalsBar                                                                                                |
+| 19   | ✅     | GroceryListPage (full page composing all components)                                                                      |
 
-## Written But Not Yet Committed (in progress at session end)
-
-| Task | File                                             | Status  |
-| ---- | ------------------------------------------------ | ------- |
-| 11   | `src/features/grocery/hooks/use-grocery-list.ts` | Written |
-| 12   | `src/features/grocery/hooks/use-categories.ts`   | Written |
-| 13   | `src/features/auth/hooks/use-auth.ts`            | Written |
-| 14   | `src/features/auth/components/GoogleButton.tsx`  | Written |
-| 14   | `src/features/auth/components/LoginForm.tsx`     | Written |
-| 14   | `src/features/auth/components/SignupForm.tsx`    | Written |
+**Tests: 31 passing across 7 test files**
 
 ---
 
-## Remaining Tasks (not yet started)
+## Remaining Tasks
 
-### Task 14 (remaining)
+### Task 20: PWA Assets + Final Wiring
 
-- `src/app/AuthPage.tsx`
+The code is complete. Only manual steps remain:
 
-### Task 15: Layouts + Router
+1. **Create PWA icons** (user must create these manually):
+   - `public/icons/icon-192.png` (192×192 px square PNG)
+   - `public/icons/icon-512.png` (512×512 px square PNG)
+   - Any image editor works; use a kitchen/grocery themed icon
 
-- `src/components/layouts/AuthLayout.tsx`
-- `src/components/layouts/AppLayout.tsx`
-- `src/components/ProtectedRoute.tsx`
-- `src/App.tsx`
-- `src/main.tsx` (auth bootstrap + BrowserRouter + Toaster)
-- `src/app/DashboardPage.tsx` (placeholder)
-
-### Task 16: GroceryForm
-
-- `src/features/grocery/components/GroceryForm.tsx`
-
-### Task 17: GroceryItemRow + test
-
-- `src/features/grocery/components/GroceryItemRow.tsx`
-- `src/features/grocery/components/GroceryItemRow.test.tsx`
-
-### Task 18: CategoryFilter + TotalsBar
-
-- `src/features/grocery/components/CategoryFilter.tsx`
-- `src/features/grocery/components/TotalsBar.tsx`
-
-### Task 19: GroceryListPage
-
-- `src/app/GroceryListPage.tsx`
-
-### Task 20: PWA + Final
-
-- `public/icons/icon-192.png` and `icon-512.png` (user creates these manually)
-- Run `npm run build` to verify PWA
+2. **Run production build** to verify PWA:
+   ```bash
+   npm run build
+   npm run preview
+   ```
 
 ---
 
@@ -102,15 +80,29 @@ Full-stack grocery/kitchen management PWA:
    VITE_SUPABASE_ANON_KEY=your-anon-key
    ```
    (Get values from Supabase Dashboard → Settings → API)
-5. **Create PWA icons**: two square PNGs at `public/icons/icon-192.png` and `public/icons/icon-512.png`
+5. **Create PWA icons**: `public/icons/icon-192.png` and `public/icons/icon-512.png`
+6. **Run dev server**: `npm run dev` then open `http://localhost:5173`
 
 ---
 
-## All Tests Status
+## Running the App
 
-Run from `kitchen-companion/`: `npm run test:run`
+```bash
+cd /Users/kuike/Desktop/RANDOM/GroseryList/kitchen-companion
+cp .env.local.example .env.local  # then fill in real values
+npm run dev
+```
 
-- Total passing: 22 tests across 5 test files
+---
+
+## Test Status
+
+```bash
+npm run test -- --run
+# 31 tests, 7 test files, all passing
+```
+
+---
 
 ## Key Architecture Rules (for continuing agent)
 
@@ -118,12 +110,40 @@ Run from `kitchen-companion/`: `npm run test:run`
 - Zustand stores: `useAuthStore`, `useGroceryStore`
 - Path alias: `@/` = `src/`
 - All code is in `src/features/`, `src/app/`, `src/components/`, `src/lib/`, `src/types/`
-- The plan file has complete code for every remaining file — use it verbatim
+- Tailwind CSS v3 (NOT v4 — different config format)
+- Zod v4 + @hookform/resolvers v5 (compatible)
 
-## How to Continue
+## File Structure
 
-1. Open Claude Code in `/Users/kuike/Desktop/RANDOM/GroseryList/kitchen-companion/`
-2. Reference the plan: `docs/superpowers/plans/2026-06-18-kitchen-companion-spec1.md`
-3. Start from Task 14 (AuthPage) and continue through Task 20
-4. Run `npm run test:run` after each task to verify nothing broke
-5. Commit after each task
+```
+src/
+  app/               # Page components
+    AuthPage.tsx
+    DashboardPage.tsx
+    GroceryListPage.tsx
+  components/
+    layouts/
+      AppLayout.tsx
+      AuthLayout.tsx
+    ProtectedRoute.tsx
+    ui/              # Shadcn components
+  features/
+    auth/
+      auth.store.ts
+      components/    # GoogleButton, LoginForm, SignupForm
+      hooks/         # use-auth.ts
+    grocery/
+      grocery.store.ts
+      components/    # CategoryFilter, GroceryForm, GroceryItemRow, TotalsBar
+      hooks/         # use-categories, use-filtered-items, use-grocery-list, use-grocery-totals
+      services/      # grocery.service.ts
+  lib/
+    supabase.ts
+    zod-schemas.ts
+  test/
+    mocks/supabase.ts
+    setup.ts
+  types/index.ts
+  App.tsx
+  main.tsx
+```
