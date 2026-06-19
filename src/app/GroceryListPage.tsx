@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,6 +22,12 @@ import type { GroceryItem } from "@/types";
 import type { GroceryItemFormValues } from "@/lib/zod-schemas";
 import type { SortBy } from "@/types";
 
+const SORT_OPTIONS: { value: SortBy; label: string }[] = [
+  { value: "name", label: "Name" },
+  { value: "category", label: "Category" },
+  { value: "created_at", label: "Date Added" },
+];
+
 export function GroceryListPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GroceryItem | null>(null);
@@ -38,6 +44,11 @@ export function GroceryListPage() {
   const { categories } = useCategories();
 
   const allPurchased = items.length > 0 && items.every((i) => i.purchased);
+  const purchasedItems = items.filter((i) => i.purchased);
+
+  const clearPurchased = () => {
+    purchasedItems.forEach((i) => remove(i.id));
+  };
 
   const handleAdd = async (values: GroceryItemFormValues) => {
     await add(values);
@@ -60,7 +71,7 @@ export function GroceryListPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 p-4">
+    <div className="mx-auto max-w-2xl space-y-4 p-4 pb-24 md:pb-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Grocery List</h1>
         <Button onClick={() => setFormOpen(true)} size="sm">
@@ -83,43 +94,69 @@ export function GroceryListPage() {
         </div>
         <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
           <SelectTrigger className="w-36">
-            <SelectValue />
+            <SelectValue>
+              {SORT_OPTIONS.find((o) => o.value === sortBy)?.label}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="name">Name</SelectItem>
-            <SelectItem value="category">Category</SelectItem>
-            <SelectItem value="created_at">Date Added</SelectItem>
+            {SORT_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
 
-      <CategoryFilter categories={categories} />
+      {categories.length > 0 && <CategoryFilter categories={categories} />}
 
-      {items.length > 0 && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Checkbox
-            id="bulk-check"
-            checked={allPurchased}
-            onCheckedChange={(checked) =>
-              bulkMarkPurchased(
-                items.map((i) => i.id),
-                !!checked,
-              )
-            }
-          />
-          <label htmlFor="bulk-check" className="cursor-pointer select-none">
+      <div className="flex items-center justify-between min-h-[2rem]">
+        {items.length > 0 && (
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
+            <Checkbox
+              checked={allPurchased}
+              onCheckedChange={(checked) =>
+                bulkMarkPurchased(
+                  items.map((i) => i.id),
+                  !!checked,
+                )
+              }
+            />
             {allPurchased ? "Unmark all" : "Mark all purchased"}
           </label>
-        </div>
-      )}
+        )}
+        {purchasedItems.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearPurchased}
+            className="ml-auto text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="mr-1 h-3.5 w-3.5" />
+            Clear {purchasedItems.length} purchased
+          </Button>
+        )}
+      </div>
 
       <div className="space-y-2">
         {filteredItems.length === 0 ? (
-          <p className="py-8 text-center text-muted-foreground">
-            {items.length === 0
-              ? "Your list is empty. Add your first item!"
-              : "No items match your search."}
-          </p>
+          <div className="flex flex-col items-center gap-2 py-12 text-center">
+            <p className="text-muted-foreground">
+              {items.length === 0
+                ? "Your list is empty."
+                : "No items match your search."}
+            </p>
+            {items.length === 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setFormOpen(true)}
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                Add your first item
+              </Button>
+            )}
+          </div>
         ) : (
           filteredItems.map((item) => (
             <GroceryItemRow

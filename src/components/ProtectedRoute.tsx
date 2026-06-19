@@ -12,5 +12,7 @@ export function ProtectedRoute() {
     );
   }
 
+  if (!user && !import.meta.env.VITE_SUPABASE_URL) return <Outlet />;
+
   return user ? <Outlet /> : <Navigate to="/auth" replace />;
 }

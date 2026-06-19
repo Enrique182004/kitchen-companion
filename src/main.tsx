@@ -11,6 +11,11 @@ function Root() {
   const { setSession, setLoading } = useAuthStore();
 
   useEffect(() => {
+    if (!import.meta.env.VITE_SUPABASE_URL) {
+      setLoading(false);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);

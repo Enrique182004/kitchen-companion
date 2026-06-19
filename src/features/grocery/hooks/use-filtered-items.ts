@@ -20,6 +20,9 @@ export function useFilteredItems() {
     }
 
     return [...result].sort((a, b) => {
+      // purchased items always sink to the bottom
+      if (a.purchased !== b.purchased) return a.purchased ? 1 : -1;
+
       if (sortBy === "name") return a.name.localeCompare(b.name);
       if (sortBy === "category") {
         const catA = a.categories?.name ?? "";

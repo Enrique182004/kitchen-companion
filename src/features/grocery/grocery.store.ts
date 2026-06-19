@@ -21,7 +21,7 @@ export const useGroceryStore = create<GroceryState>((set) => ({
   items: [],
   searchQuery: "",
   selectedCategory: null,
-  sortBy: "created_at",
+  sortBy: "name",
   loading: false,
   setItems: (items) => set({ items }),
   addItem: (item) => set((state) => ({ items: [...state.items, item] })),
