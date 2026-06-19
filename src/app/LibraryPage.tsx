@@ -1,5 +1,12 @@
 import { useState, useMemo } from "react";
-import { Search, Plus, Pencil, Trash2, BookOpen } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Pencil,
+  Trash2,
+  BookOpen,
+  ShoppingCart,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +17,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLibraryStore } from "@/features/library/library.store";
+import { LibraryForm } from "@/features/library/components/LibraryForm";
 import { useGroceryList } from "@/features/grocery/hooks/use-grocery-list";
+import { toast } from "sonner";
 import type { LibraryItem } from "@/types";
 
 type SortMode = "most_used" | "name" | "recent";
@@ -18,14 +27,16 @@ type SortMode = "most_used" | "name" | "recent";
 function LibraryCard({
   item,
   onAddToList,
+  onEdit,
   onDelete,
 }: {
   item: LibraryItem;
   onAddToList: (item: LibraryItem) => void;
+  onEdit: (item: LibraryItem) => void;
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+    <div className="flex items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
       <div className="min-w-0 flex-1">
         <p className="font-medium">{item.name}</p>
         <div className="flex flex-wrap gap-x-2 text-sm text-muted-foreground">
@@ -41,8 +52,9 @@ function LibraryCard({
           </p>
         )}
         <p className="mt-1 text-xs text-muted-foreground">
-          Added {item.times_added}× · last{" "}
-          {new Date(item.last_added).toLocaleDateString()}
+          {item.times_added > 0
+            ? `Added ${item.times_added}× · last ${new Date(item.last_added).toLocaleDateString()}`
+            : "Not yet added to list"}
         </p>
       </div>
       <div className="flex shrink-0 flex-col gap-1">
@@ -50,19 +62,31 @@ function LibraryCard({
           size="sm"
           onClick={() => onAddToList(item)}
           className="h-8 text-xs"
+          title="Add to grocery list"
         >
-          <Plus className="mr-1 h-3.5 w-3.5" />
+          <ShoppingCart className="mr-1 h-3.5 w-3.5" />
           Add
         </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => onDelete(item.id)}
-          aria-label="Remove from library"
-          className="h-8 w-8 text-destructive hover:text-destructive"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex gap-1">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => onEdit(item)}
+            aria-label="Edit item"
+            className="h-8 w-8"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => onDelete(item.id)}
+            aria-label="Remove from library"
+            className="h-8 w-8 text-destructive hover:text-destructive"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -71,7 +95,10 @@ function LibraryCard({
 export function LibraryPage() {
   const [search, setSearch] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("most_used");
-  const { items, removeItem } = useLibraryStore();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<LibraryItem | null>(null);
+
+  const { items, createItem, updateItem, removeItem } = useLibraryStore();
   const { add } = useGroceryList();
 
   const filtered = useMemo(() => {
@@ -100,6 +127,57 @@ export function LibraryPage() {
       category_id: null,
       purchased: false,
     });
+    toast.success(`${item.name} added to grocery list`);
+  };
+
+  const handleCreate = (values: {
+    name: string;
+    unit?: string;
+    estimated_price?: number | "" | null;
+    store?: string;
+    notes?: string;
+  }) => {
+    createItem({
+      name: values.name,
+      unit: values.unit || undefined,
+      estimated_price:
+        values.estimated_price !== "" && values.estimated_price != null
+          ? Number(values.estimated_price)
+          : null,
+      store: values.store || null,
+      notes: values.notes || null,
+    });
+  };
+
+  const handleEdit = (values: {
+    name: string;
+    unit?: string;
+    estimated_price?: number | "" | null;
+    store?: string;
+    notes?: string;
+  }) => {
+    if (!editingItem) return;
+    updateItem(editingItem.id, {
+      name: values.name,
+      unit: values.unit ?? "",
+      estimated_price:
+        values.estimated_price !== "" && values.estimated_price != null
+          ? Number(values.estimated_price)
+          : null,
+      store: values.store || null,
+      notes: values.notes || null,
+    });
+    setEditingItem(null);
+  };
+
+  const openEdit = (item: LibraryItem) => {
+    setEditingItem(item);
+    setFormOpen(true);
+  };
+
+  const handleClose = () => {
+    setFormOpen(false);
+    setEditingItem(null);
   };
 
   return (
@@ -111,6 +189,41 @@ export function LibraryPage() {
             {items.length} saved item{items.length !== 1 ? "s" : ""}
           </p>
         </div>
+        <Button size="sm" onClick={() => setFormOpen(true)}>
+          <Plus className="mr-1 h-4 w-4" />
+          New Item
+        </Button>
+      </div>
+
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search library…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+        <Select
+          value={sortMode}
+          onValueChange={(v) => setSortMode(v as SortMode)}
+        >
+          <SelectTrigger className="w-36">
+            <SelectValue>
+              {sortMode === "most_used"
+                ? "Most Used"
+                : sortMode === "name"
+                  ? "Name"
+                  : "Recent"}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="most_used">Most Used</SelectItem>
+            <SelectItem value="name">Name</SelectItem>
+            <SelectItem value="recent">Recent</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {items.length === 0 ? (
@@ -119,62 +232,40 @@ export function LibraryPage() {
           <div>
             <p className="font-medium">Your library is empty</p>
             <p className="text-sm text-muted-foreground">
-              Items are saved here automatically when you add them to your
-              grocery list.
+              Create items here or they save automatically from your grocery
+              list.
             </p>
           </div>
+          <Button size="sm" onClick={() => setFormOpen(true)}>
+            <Plus className="mr-1 h-4 w-4" />
+            Create First Item
+          </Button>
         </div>
+      ) : filtered.length === 0 ? (
+        <p className="py-8 text-center text-muted-foreground">
+          No items match your search.
+        </p>
       ) : (
-        <>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search library…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-            <Select
-              value={sortMode}
-              onValueChange={(v) => setSortMode(v as SortMode)}
-            >
-              <SelectTrigger className="w-36">
-                <SelectValue>
-                  {sortMode === "most_used"
-                    ? "Most Used"
-                    : sortMode === "name"
-                      ? "Name"
-                      : "Recent"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="most_used">Most Used</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="recent">Recent</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {filtered.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">
-              No items match your search.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {filtered.map((item) => (
-                <LibraryCard
-                  key={item.id}
-                  item={item}
-                  onAddToList={handleAddToList}
-                  onDelete={removeItem}
-                />
-              ))}
-            </div>
-          )}
-        </>
+        <div className="space-y-2">
+          {filtered.map((item) => (
+            <LibraryCard
+              key={item.id}
+              item={item}
+              onAddToList={handleAddToList}
+              onEdit={openEdit}
+              onDelete={removeItem}
+            />
+          ))}
+        </div>
       )}
+
+      <LibraryForm
+        open={formOpen}
+        onClose={handleClose}
+        onSubmit={editingItem ? handleEdit : handleCreate}
+        defaultValues={editingItem ?? undefined}
+        title={editingItem ? "Edit Item" : "New Library Item"}
+      />
     </div>
   );
 }
