@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { Control, UseFieldArrayReturn } from "react-hook-form";
 import { useFieldArray } from "react-hook-form";
 import { Plus, Trash2, GripVertical } from "lucide-react";
@@ -98,6 +99,8 @@ export function InstructionFields({ control }: Props) {
     }),
   );
 
+  const itemIds = useMemo(() => fields.map((f) => f.id), [fields]);
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -117,10 +120,7 @@ export function InstructionFields({ control }: Props) {
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext
-          items={fields.map((f) => f.id)}
-          strategy={verticalListSortingStrategy}
-        >
+        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
             {fields.map((field, i) => (
               <SortableStep

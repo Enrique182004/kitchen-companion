@@ -20,6 +20,10 @@ import { useLibraryStore } from "@/features/library/library.store";
 import type { RecipeFormValues } from "../recipe.store";
 import type { Recipe } from "@/types";
 
+// Read createItem imperatively so RecipeForm doesn't subscribe to the library
+// store and potentially re-render / re-run useEffect during saves.
+const getCreateLibraryItem = () => useLibraryStore.getState().createItem;
+
 const nanToNull = z.preprocess(
   (v) => (typeof v === "number" && isNaN(v) ? null : v),
   z.number().min(0).nullable(),
@@ -87,8 +91,6 @@ export function RecipeForm({
   importDefaults,
   title = "New Recipe",
 }: Props) {
-  const createLibraryItem = useLibraryStore((s) => s.createItem);
-
   const {
     register,
     control,
@@ -110,9 +112,10 @@ export function RecipeForm({
 
   const submit = (values: RecipeFormValues) => {
     onSubmit(values);
+    const createItem = getCreateLibraryItem();
     values.ingredients.forEach((ing) => {
       if (ing.name.trim()) {
-        createLibraryItem({ name: ing.name.trim() });
+        createItem({ name: ing.name.trim() });
       }
     });
     onClose();
