@@ -4,10 +4,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/features/auth/hooks/use-auth";
+import { useAuthStore } from "@/features/auth/auth.store";
+import { supabase } from "@/lib/supabase";
 
 const schema = z.object({
   email: z.string().email("Enter a valid email"),
@@ -18,6 +21,8 @@ type FormValues = z.infer<typeof schema>;
 
 export function AuthPage() {
   const { signIn, signUp } = useAuth();
+  const { setSession } = useAuthStore();
+  const navigate = useNavigate();
   const [tab, setTab] = useState<"signin" | "signup">("signin");
 
   const {
@@ -33,7 +38,12 @@ export function AuthPage() {
         await signIn(email, password);
       } else {
         await signUp(email, password);
-        toast.success("Account created! You are now signed in.");
+      }
+      // Manually sync session in case onAuthStateChange is slow
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setSession(data.session);
+        navigate("/grocery", { replace: true });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
