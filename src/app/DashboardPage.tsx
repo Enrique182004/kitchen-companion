@@ -1,13 +1,17 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   ShoppingCart,
   CheckCircle2,
   DollarSign,
   TrendingUp,
+  Package,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGroceryStore } from "@/features/grocery/grocery.store";
 import { useGroceryTotals } from "@/features/grocery/hooks/use-grocery-totals";
+import { usePantryStore, expiryStatus } from "@/features/pantry/pantry.store";
 
 function StatCard({
   icon: Icon,
@@ -45,15 +49,31 @@ export function DashboardPage() {
   const progress = total > 0 ? Math.round((purchasedCount / total) * 100) : 0;
   const fmt = (n: number) => `$${n.toFixed(2)}`;
 
-  const storeBreakdown = items.reduce<Record<string, number>>((acc, item) => {
-    if (!item.store) return acc;
-    acc[item.store] = (acc[item.store] ?? 0) + 1;
-    return acc;
-  }, {});
+  const storeBreakdown = useMemo(
+    () =>
+      items.reduce<Record<string, number>>((acc, item) => {
+        if (!item.store) return acc;
+        acc[item.store] = (acc[item.store] ?? 0) + 1;
+        return acc;
+      }, {}),
+    [items],
+  );
 
-  const topStores = Object.entries(storeBreakdown)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 4);
+  const topStores = useMemo(
+    () =>
+      Object.entries(storeBreakdown)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 4),
+    [storeBreakdown],
+  );
+
+  const pantryItems = usePantryStore((s) => s.items);
+  const pantryExpired = pantryItems.filter(
+    (i) => expiryStatus(i.expiration_date) === "expired",
+  ).length;
+  const pantrySoon = pantryItems.filter(
+    (i) => expiryStatus(i.expiration_date) === "soon",
+  ).length;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-4 pb-24 md:pb-4">
@@ -181,6 +201,61 @@ export function DashboardPage() {
             </div>
           )}
         </>
+      )}
+
+      {pantryItems.length > 0 && (
+        <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">Pantry status</p>
+            <Link
+              to="/pantry"
+              className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+            >
+              View pantry
+            </Link>
+          </div>
+          <div className="flex gap-4">
+            {pantryExpired > 0 ? (
+              <Link
+                to="/pantry"
+                className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 dark:bg-red-950/30"
+              >
+                <AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+                    {pantryExpired} expired
+                  </p>
+                  <p className="text-xs text-red-500/70">needs attention</p>
+                </div>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-2 dark:bg-green-950/30">
+                <Package className="h-4 w-4 text-green-500 shrink-0" />
+                <p className="text-sm text-green-700 dark:text-green-400">
+                  Nothing expired
+                </p>
+              </div>
+            )}
+            {pantrySoon > 0 && (
+              <Link
+                to="/pantry"
+                className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-2 dark:bg-orange-950/30"
+              >
+                <AlertTriangle className="h-4 w-4 text-orange-400 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-orange-600 dark:text-orange-400">
+                    {pantrySoon} expiring soon
+                  </p>
+                  <p className="text-xs text-orange-500/70">use soon</p>
+                </div>
+              </Link>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {pantryItems.length} item{pantryItems.length !== 1 ? "s" : ""} in
+            pantry
+          </p>
+        </div>
       )}
     </div>
   );

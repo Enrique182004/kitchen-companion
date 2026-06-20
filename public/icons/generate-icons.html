@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Generate PWA Icons</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 2rem;
+        background: #111;
+        color: #eee;
+      }
+      canvas {
+        display: block;
+        margin: 1rem 0;
+        border: 1px solid #444;
+      }
+      button {
+        padding: 0.5rem 1rem;
+        margin: 0.25rem;
+        cursor: pointer;
+        background: #18181b;
+        color: #fff;
+        border: 1px solid #555;
+        border-radius: 6px;
+      }
+      button:hover {
+        background: #27272a;
+      }
+      h2 {
+        margin-top: 2rem;
+      }
+      p {
+        color: #aaa;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Generate PWA Icons</h1>
+    <p>
+      Open this file in a browser, then download the two PNG icons below and
+      place them in <code>public/icons/</code>.
+    </p>
+
+    <h2>icon-192.png</h2>
+    <canvas id="c192" width="192" height="192"></canvas>
+    <button onclick="download('c192', 'icon-192.png')">
+      Download icon-192.png
+    </button>
+
+    <h2>icon-512.png</h2>
+    <canvas id="c512" width="512" height="512"></canvas>
+    <button onclick="download('c512', 'icon-512.png')">
+      Download icon-512.png
+    </button>
+
+    <script>
+      function drawIcon(canvasId) {
+        const canvas = document.getElementById(canvasId);
+        const size = canvas.width;
+        const ctx = canvas.getContext("2d");
+        const radius = size * 0.2;
+
+        ctx.fillStyle = "#18181b";
+        ctx.beginPath();
+        ctx.moveTo(radius, 0);
+        ctx.arcTo(size, 0, size, size, radius);
+        ctx.arcTo(size, size, 0, size, radius);
+        ctx.arcTo(0, size, 0, 0, radius);
+        ctx.arcTo(0, 0, size, 0, radius);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.font = `${size * 0.6}px serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🛒", size / 2, size / 2);
+      }
+
+      function download(canvasId, filename) {
+        const canvas = document.getElementById(canvasId);
+        const link = document.createElement("a");
+        link.download = filename;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }
+
+      drawIcon("c192");
+      drawIcon("c512");
+    </script>
+  </body>
+</html>

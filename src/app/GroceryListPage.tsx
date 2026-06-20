@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Plus, Search, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { Plus, Search, Trash2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,46 +13,131 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useGroceryStore } from "@/features/grocery/grocery.store";
 import { useGroceryList } from "@/features/grocery/hooks/use-grocery-list";
+import { usePantryStore } from "@/features/pantry/pantry.store";
 import { useFilteredItems } from "@/features/grocery/hooks/use-filtered-items";
 import { useCategories } from "@/features/grocery/hooks/use-categories";
-import { GroceryItemRow } from "@/features/grocery/components/GroceryItemRow";
 import { CategoryFilter } from "@/features/grocery/components/CategoryFilter";
 import { TotalsBar } from "@/features/grocery/components/TotalsBar";
 import { GroceryForm } from "@/features/grocery/components/GroceryForm";
-import type { GroceryItem } from "@/types";
+import { GroupedGroceryList } from "@/features/grocery/components/GroupedGroceryList";
+import { LibrarySheet } from "@/features/library/components/LibrarySheet";
+import type { GroceryItem, LibraryItem } from "@/types";
 import type { GroceryItemFormValues } from "@/lib/zod-schemas";
 import type { SortBy } from "@/types";
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
   { value: "name", label: "Name" },
   { value: "category", label: "Category" },
+  { value: "store", label: "Store" },
   { value: "created_at", label: "Date Added" },
 ];
 
 export function GroceryListPage() {
   const [formOpen, setFormOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GroceryItem | null>(null);
+  const [quickName, setQuickName] = useState("");
+  const quickInputRef = useRef<HTMLInputElement>(null);
 
   const searchQuery = useGroceryStore((s) => s.searchQuery);
   const setSearchQuery = useGroceryStore((s) => s.setSearchQuery);
   const sortBy = useGroceryStore((s) => s.sortBy);
   const setSortBy = useGroceryStore((s) => s.setSortBy);
+  const selectedCategory = useGroceryStore((s) => s.selectedCategory);
   const items = useGroceryStore((s) => s.items);
 
+  const restoreItems = useGroceryStore((s) => s.restoreItems);
   const { add, update, remove, markPurchased, bulkMarkPurchased } =
     useGroceryList();
+  const addToPantry = usePantryStore((s) => s.addItem);
   const filteredItems = useFilteredItems();
   const { categories } = useCategories();
 
   const allPurchased = items.length > 0 && items.every((i) => i.purchased);
   const purchasedItems = items.filter((i) => i.purchased);
+  const activeFiltered = filteredItems.filter((i) => !i.purchased);
+  const purchasedFiltered = filteredItems.filter((i) => i.purchased);
 
   const clearPurchased = () => {
-    purchasedItems.forEach((i) => remove(i.id));
+    const snapshot = [...purchasedItems];
+    snapshot.forEach((i) => remove(i.id));
+    toast.success(
+      `${snapshot.length} item${snapshot.length !== 1 ? "s" : ""} cleared`,
+      {
+        action: {
+          label: "Undo",
+          onClick: () => restoreItems(snapshot),
+        },
+        duration: 5000,
+      },
+    );
+  };
+
+  const handleToggle = (id: string, purchased: boolean) => {
+    markPurchased(id, purchased);
+    if (purchased) {
+      const item = items.find((i) => i.id === id);
+      if (item) {
+        toast(`"${item.name}" marked as purchased`, {
+          action: {
+            label: "Add to pantry",
+            onClick: () =>
+              addToPantry({
+                name: item.name,
+                quantity: item.quantity,
+                unit: item.unit ?? "",
+                expiration_date: "",
+              }),
+          },
+          duration: 5000,
+        });
+      }
+    }
+  };
+
+  const handleDelete = (item: GroceryItem) => {
+    remove(item.id);
+    toast(`Removed "${item.name}"`, {
+      action: {
+        label: "Undo",
+        onClick: () => restoreItems([item]),
+      },
+      duration: 4000,
+    });
   };
 
   const handleAdd = async (values: GroceryItemFormValues) => {
     await add(values);
+  };
+
+  const handleQuickAdd = async () => {
+    const name = quickName.trim();
+    if (!name) return;
+    setQuickName("");
+    await add({
+      name,
+      quantity: 1,
+      unit: null,
+      estimated_price: undefined,
+      store: null,
+      notes: null,
+      category_id: null,
+      purchased: false,
+    });
+    quickInputRef.current?.focus();
+  };
+
+  const handleAddFromLibrary = async (item: LibraryItem, quantity: number) => {
+    await add({
+      name: item.name,
+      quantity,
+      unit: item.unit || null,
+      estimated_price: item.estimated_price ?? undefined,
+      store: item.store || null,
+      notes: item.notes || null,
+      category_id: null,
+      purchased: false,
+    });
   };
 
   const handleEdit = async (values: GroceryItemFormValues) => {
@@ -72,15 +158,47 @@ export function GroceryListPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4 pb-24 md:pb-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">Grocery List</h1>
-        <Button onClick={() => setFormOpen(true)} size="sm">
-          <Plus className="mr-1 h-4 w-4" />
-          Add Item
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLibraryOpen(true)}
+          >
+            <BookOpen className="mr-1 h-4 w-4" />
+            Library
+          </Button>
+          <Button onClick={() => setFormOpen(true)} size="sm">
+            <Plus className="mr-1 h-4 w-4" />
+            Add Item
+          </Button>
+        </div>
       </div>
 
       <TotalsBar />
+
+      <div className="flex gap-2">
+        <Input
+          ref={quickInputRef}
+          placeholder="Quick add — type a name and press Enter…"
+          value={quickName}
+          onChange={(e) => setQuickName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleQuickAdd();
+          }}
+          className="flex-1"
+        />
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleQuickAdd}
+          disabled={!quickName.trim()}
+          aria-label="Quick add item"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
 
       <div className="flex gap-2">
         <div className="relative flex-1">
@@ -138,37 +256,64 @@ export function GroceryListPage() {
         )}
       </div>
 
-      <div className="space-y-2">
-        {filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-12 text-center">
-            <p className="text-muted-foreground">
-              {items.length === 0
-                ? "Your list is empty."
-                : "No items match your search."}
-            </p>
-            {items.length === 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setFormOpen(true)}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                Add your first item
-              </Button>
-            )}
-          </div>
-        ) : (
-          filteredItems.map((item) => (
-            <GroceryItemRow
-              key={item.id}
-              item={item}
-              onToggle={(id, purchased) => markPurchased(id, purchased)}
-              onEdit={openEdit}
-              onDelete={remove}
-            />
-          ))
-        )}
-      </div>
+      {filteredItems.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 py-12 text-center">
+          <p className="text-muted-foreground">
+            {items.length === 0
+              ? "Your list is empty."
+              : searchQuery && selectedCategory
+                ? `No items match "${searchQuery}" in this category.`
+                : searchQuery
+                  ? `No items match "${searchQuery}".`
+                  : "No items in this category."}
+          </p>
+          {items.length === 0 ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFormOpen(true)}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              Add your first item
+            </Button>
+          ) : searchQuery ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                await add({
+                  name: searchQuery,
+                  quantity: 1,
+                  unit: null,
+                  estimated_price: undefined,
+                  store: null,
+                  notes: null,
+                  category_id: null,
+                  purchased: false,
+                });
+                setSearchQuery("");
+              }}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              Add "{searchQuery}" to list
+            </Button>
+          ) : null}
+        </div>
+      ) : (
+        <GroupedGroceryList
+          activeItems={activeFiltered}
+          purchasedItems={purchasedFiltered}
+          selectedCategory={selectedCategory}
+          onToggle={handleToggle}
+          onEdit={openEdit}
+          onDelete={(id) => {
+            const item = items.find((i) => i.id === id);
+            if (item) handleDelete(item);
+          }}
+          onUpdateQuantity={(id, quantity) => update(id, { quantity })}
+          onSetActualPrice={(id, price) => update(id, { actual_price: price })}
+        />
+      )}
 
       <GroceryForm
         open={formOpen}
@@ -176,6 +321,12 @@ export function GroceryListPage() {
         onSubmit={editingItem ? handleEdit : handleAdd}
         defaultValues={editingItem ?? undefined}
         title={editingItem ? "Edit Item" : "Add Item"}
+      />
+
+      <LibrarySheet
+        open={libraryOpen}
+        onClose={() => setLibraryOpen(false)}
+        onAdd={handleAddFromLibrary}
       />
     </div>
   );

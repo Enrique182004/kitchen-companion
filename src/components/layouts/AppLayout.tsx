@@ -1,7 +1,22 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { ShoppingCart, LayoutDashboard, BookOpen } from "lucide-react";
+import {
+  ShoppingCart,
+  BookOpen,
+  ChefHat,
+  Package,
+  Sun,
+  Moon,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useGroceryStore } from "@/features/grocery/grocery.store";
+import { useTheme } from "@/hooks/use-theme";
 
 export function AppLayout() {
+  const { theme, toggle } = useTheme();
+  const unpurchasedCount = useGroceryStore(
+    (s) => s.items.filter((i) => !i.purchased).length,
+  );
+
   const desktopLink = ({ isActive }: { isActive: boolean }) =>
     `text-sm font-medium transition-colors ${isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`;
 
@@ -11,13 +26,24 @@ export function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="mx-auto flex max-w-2xl items-center gap-6 px-4 py-3">
+        <div className="mx-auto flex max-w-2xl items-center gap-4 px-4 py-3">
           <span className="text-base font-bold tracking-tight">
             🛒 Kitchen Companion
           </span>
-          <nav className="hidden gap-4 md:flex">
+          <nav className="hidden flex-1 gap-4 md:flex">
             <NavLink to="/grocery" className={desktopLink}>
               Grocery
+              {unpurchasedCount > 0 && (
+                <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                  {unpurchasedCount}
+                </span>
+              )}
+            </NavLink>
+            <NavLink to="/recipes" className={desktopLink}>
+              Recipes
+            </NavLink>
+            <NavLink to="/pantry" className={desktopLink}>
+              Pantry
             </NavLink>
             <NavLink to="/library" className={desktopLink}>
               Library
@@ -26,19 +52,46 @@ export function AppLayout() {
               Dashboard
             </NavLink>
           </nav>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggle}
+            aria-label="Toggle dark mode"
+            className="ml-auto h-8 w-8"
+          >
+            {theme === "dark" ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </Button>
         </div>
       </header>
 
-      <main className="flex-1 pb-20 md:pb-0">
+      <main className="flex-1 pb-16 md:pb-0">
         <Outlet />
       </main>
 
-      {/* Mobile bottom nav — Grocery + Library only (Dashboard is desktop-only) */}
-      <nav className="fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
         <div className="flex">
           <NavLink to="/grocery" className={mobileLink}>
-            <ShoppingCart className="h-5 w-5" />
+            <div className="relative">
+              <ShoppingCart className="h-5 w-5" />
+              {unpurchasedCount > 0 && (
+                <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                  {unpurchasedCount}
+                </span>
+              )}
+            </div>
             Grocery
+          </NavLink>
+          <NavLink to="/recipes" className={mobileLink}>
+            <ChefHat className="h-5 w-5" />
+            Recipes
+          </NavLink>
+          <NavLink to="/pantry" className={mobileLink}>
+            <Package className="h-5 w-5" />
+            Pantry
           </NavLink>
           <NavLink to="/library" className={mobileLink}>
             <BookOpen className="h-5 w-5" />

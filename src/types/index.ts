@@ -31,6 +31,13 @@ export type GroceryItemUpdate = Partial<
   Omit<GroceryItem, "id" | "user_id" | "created_at" | "categories">
 >;
 
+export interface RecipeIngredient {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string | null;
+}
+
 export interface Recipe {
   id: string;
   user_id: string;
@@ -41,6 +48,7 @@ export interface Recipe {
   prep_time_minutes: number | null;
   cook_time_minutes: number | null;
   tags: string[];
+  ingredients: RecipeIngredient[];
   instructions: string[];
   is_favorite: boolean;
   created_at: string;
@@ -77,7 +85,7 @@ export interface PriceHistory {
   purchased_at: string;
 }
 
-export type SortBy = "name" | "category" | "created_at";
+export type SortBy = "name" | "category" | "created_at" | "store";
 
 export interface LibraryItem {
   id: string;
@@ -88,4 +96,5 @@ export interface LibraryItem {
   notes: string | null;
   times_added: number;
   last_added: string;
+  is_favorite: boolean;
 }

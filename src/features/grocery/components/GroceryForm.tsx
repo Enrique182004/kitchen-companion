@@ -72,8 +72,10 @@ export function GroceryForm({
         store: defaultValues.store ?? "",
         notes: defaultValues.notes ?? "",
       });
+    } else if (open) {
+      reset({ name: "", quantity: 1, unit: "", purchased: false });
     }
-  }, [defaultValues, reset]);
+  }, [defaultValues, open, reset]);
 
   useEffect(() => {
     if (!nameValue || defaultValues) {
@@ -183,15 +185,16 @@ export function GroceryForm({
           </div>
 
           <div className="space-y-1">
-            <Label>Category</Label>
+            <Label htmlFor="item-category">Category</Label>
             <Select
               value={categoryId ?? ""}
               onValueChange={(v) => setValue("category_id", v || null)}
             >
-              <SelectTrigger>
+              <SelectTrigger id="item-category">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="">None</SelectItem>
                 {categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
                     {cat.name}

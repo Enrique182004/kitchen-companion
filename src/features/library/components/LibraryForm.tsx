@@ -17,7 +17,7 @@ import type { LibraryItem } from "@/types";
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
   unit: z.string().optional(),
-  estimated_price: z.coerce.number().positive().optional().or(z.literal("")),
+  estimated_price: z.coerce.number().nonnegative().optional().or(z.literal("")),
   store: z.string().optional(),
   notes: z.string().optional(),
 });

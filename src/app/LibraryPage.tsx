@@ -6,6 +6,7 @@ import {
   Trash2,
   BookOpen,
   ShoppingCart,
+  Star,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,8 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useLibraryStore } from "@/features/library/library.store";
 import { LibraryForm } from "@/features/library/components/LibraryForm";
+import { useLibrarySync } from "@/features/library/hooks/use-library-sync";
 import { useGroceryList } from "@/features/grocery/hooks/use-grocery-list";
 import { toast } from "sonner";
 import type { LibraryItem } from "@/types";
@@ -29,16 +30,29 @@ function LibraryCard({
   onAddToList,
   onEdit,
   onDelete,
+  onToggleFavorite,
 }: {
   item: LibraryItem;
   onAddToList: (item: LibraryItem) => void;
   onEdit: (item: LibraryItem) => void;
   onDelete: (id: string) => void;
+  onToggleFavorite: (id: string) => void;
 }) {
   return (
     <div className="flex items-start gap-3 rounded-xl border bg-card p-3 shadow-sm">
       <div className="min-w-0 flex-1">
-        <p className="font-medium">{item.name}</p>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => onToggleFavorite(item.id)}
+            aria-label={item.is_favorite ? "Unstar item" : "Star item"}
+            className="shrink-0 p-0.5 text-muted-foreground transition-colors hover:text-yellow-400"
+          >
+            <Star
+              className={`h-3.5 w-3.5 ${item.is_favorite ? "fill-yellow-400 text-yellow-400" : ""}`}
+            />
+          </button>
+          <p className="font-medium">{item.name}</p>
+        </div>
         <div className="flex flex-wrap gap-x-2 text-sm text-muted-foreground">
           {item.unit && <span>{item.unit}</span>}
           {item.estimated_price != null && (
@@ -95,26 +109,47 @@ function LibraryCard({
 export function LibraryPage() {
   const [search, setSearch] = useState("");
   const [sortMode, setSortMode] = useState<SortMode>("most_used");
+  const [favOnly, setFavOnly] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<LibraryItem | null>(null);
 
-  const { items, createItem, updateItem, removeItem } = useLibraryStore();
+  const {
+    items,
+    createItem,
+    updateItem,
+    removeItem,
+    restoreItem,
+    toggleFavorite,
+  } = useLibrarySync();
+
+  const handleDelete = (id: string) => {
+    const item = items.find((i) => i.id === id);
+    removeItem(id);
+    if (item) {
+      toast(`Removed "${item.name}"`, {
+        action: { label: "Undo", onClick: () => restoreItem(item) },
+        duration: 4000,
+      });
+    }
+  };
   const { add } = useGroceryList();
 
   const filtered = useMemo(() => {
     let result = items;
+    if (favOnly) result = result.filter((i) => i.is_favorite);
     if (search) {
       const q = search.toLowerCase();
       result = result.filter((i) => i.name.toLowerCase().includes(q));
     }
     return [...result].sort((a, b) => {
+      if (a.is_favorite !== b.is_favorite) return a.is_favorite ? -1 : 1;
       if (sortMode === "most_used") return b.times_added - a.times_added;
       if (sortMode === "name") return a.name.localeCompare(b.name);
       return (
         new Date(b.last_added).getTime() - new Date(a.last_added).getTime()
       );
     });
-  }, [items, search, sortMode]);
+  }, [items, search, sortMode, favOnly]);
 
   const handleAddToList = async (item: LibraryItem) => {
     await add({
@@ -226,6 +261,27 @@ export function LibraryPage() {
         </Select>
       </div>
 
+      {items.length > 0 && (
+        <button
+          onClick={() => setFavOnly((v) => !v)}
+          className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors ${
+            favOnly
+              ? "border-yellow-400 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300"
+              : "border-border text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Star
+            className={`h-3.5 w-3.5 ${favOnly ? "fill-yellow-400 text-yellow-400" : ""}`}
+          />
+          Favorites
+          {favOnly && (
+            <span className="ml-0.5 font-medium">
+              ({items.filter((i) => i.is_favorite).length})
+            </span>
+          )}
+        </button>
+      )}
+
       {items.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
           <BookOpen className="h-10 w-10 text-muted-foreground" />
@@ -243,7 +299,7 @@ export function LibraryPage() {
         </div>
       ) : filtered.length === 0 ? (
         <p className="py-8 text-center text-muted-foreground">
-          No items match your search.
+          {favOnly ? "No favorite items yet." : "No items match your search."}
         </p>
       ) : (
         <div className="space-y-2">
@@ -253,7 +309,8 @@ export function LibraryPage() {
               item={item}
               onAddToList={handleAddToList}
               onEdit={openEdit}
-              onDelete={removeItem}
+              onDelete={handleDelete}
+              onToggleFavorite={toggleFavorite}
             />
           ))}
         </div>

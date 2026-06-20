@@ -29,6 +29,11 @@ export function useFilteredItems() {
         const catB = b.categories?.name ?? "";
         return catA.localeCompare(catB);
       }
+      if (sortBy === "store") {
+        const storeA = a.store ?? "";
+        const storeB = b.store ?? "";
+        return storeA.localeCompare(storeB) || a.name.localeCompare(b.name);
+      }
       return (
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );

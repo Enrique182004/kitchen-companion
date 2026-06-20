@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGroceryStore } from "../grocery.store";
@@ -12,6 +13,17 @@ export function CategoryFilter({ categories }: Props) {
   const setSelectedCategory = useGroceryStore(
     (state) => state.setSelectedCategory,
   );
+
+  // Clear stale filter when the selected category is deleted
+  useEffect(() => {
+    if (
+      selectedCategory !== null &&
+      categories.length > 0 &&
+      !categories.some((c) => c.id === selectedCategory)
+    ) {
+      setSelectedCategory(null);
+    }
+  }, [categories, selectedCategory, setSelectedCategory]);
 
   return (
     <ScrollArea className="w-full" orientation="horizontal">
