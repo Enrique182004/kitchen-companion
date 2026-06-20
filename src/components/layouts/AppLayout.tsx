@@ -6,6 +6,7 @@ import {
   Package,
   Sun,
   Moon,
+  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGroceryStore } from "@/features/grocery/grocery.store";
@@ -14,6 +15,14 @@ import { useOnlineStatus } from "@/hooks/use-online-status";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { NotificationBell } from "@/features/notifications/NotificationBell";
 
+const NAV_ITEMS = [
+  { to: "/grocery", label: "Grocery", Icon: ShoppingCart },
+  { to: "/recipes", label: "Recipes", Icon: ChefHat },
+  { to: "/pantry", label: "Pantry", Icon: Package },
+  { to: "/library", label: "Library", Icon: BookOpen },
+  { to: "/", label: "Home", Icon: LayoutDashboard, end: true },
+];
+
 export function AppLayout() {
   const { theme, toggle } = useTheme();
   const isOnline = useOnlineStatus();
@@ -21,41 +30,40 @@ export function AppLayout() {
     (s) => s.items.filter((i) => !i.purchased).length,
   );
 
-  const desktopLink = ({ isActive }: { isActive: boolean }) =>
-    `text-sm font-medium transition-colors ${isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`;
-
-  const mobileLink = ({ isActive }: { isActive: boolean }) =>
-    `flex flex-1 flex-col items-center gap-1 py-3 text-xs transition-colors ${isActive ? "text-foreground" : "text-muted-foreground"}`;
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {/* Header */}
+      <header className="sticky top-0 z-10 border-b bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
         <div className="mx-auto flex max-w-2xl items-center gap-4 px-4 py-3">
-          <span className="text-base font-bold tracking-tight">
-            🛒 Kitchen Companion
+          <span className="text-base font-bold tracking-tight text-primary">
+            Kitchen Companion
           </span>
-          <nav className="hidden flex-1 gap-4 md:flex">
-            <NavLink to="/grocery" className={desktopLink}>
-              Grocery
-              {unpurchasedCount > 0 && (
-                <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                  {unpurchasedCount}
-                </span>
-              )}
-            </NavLink>
-            <NavLink to="/recipes" className={desktopLink}>
-              Recipes
-            </NavLink>
-            <NavLink to="/pantry" className={desktopLink}>
-              Pantry
-            </NavLink>
-            <NavLink to="/library" className={desktopLink}>
-              Library
-            </NavLink>
-            <NavLink to="/" end className={desktopLink}>
-              Dashboard
-            </NavLink>
+
+          {/* Desktop nav */}
+          <nav className="hidden flex-1 gap-1 md:flex">
+            {NAV_ITEMS.map(({ to, label, end }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                className={({ isActive }) =>
+                  `rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  }`
+                }
+              >
+                {label}
+                {label === "Grocery" && unpurchasedCount > 0 && (
+                  <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                    {unpurchasedCount}
+                  </span>
+                )}
+              </NavLink>
+            ))}
           </nav>
+
           <div className="ml-auto flex items-center gap-1">
             <GlobalSearch />
             <NotificationBell />
@@ -76,41 +84,54 @@ export function AppLayout() {
         </div>
       </header>
 
+      {/* Offline banner */}
       {!isOnline && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 px-4 py-1.5 text-center text-xs text-yellow-800 dark:text-yellow-200">
+        <div className="border-b border-yellow-200 bg-yellow-50 px-4 py-1.5 text-center text-xs text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200">
           You're offline — changes will sync when reconnected
         </div>
       )}
 
-      <main className="flex-1 pb-16 md:pb-0">
+      <main className="flex-1 pb-20 md:pb-0">
         <Outlet />
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
-        <div className="flex">
-          <NavLink to="/grocery" className={mobileLink}>
-            <div className="relative">
-              <ShoppingCart className="h-5 w-5" />
-              {unpurchasedCount > 0 && (
-                <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                  {unpurchasedCount}
-                </span>
+      {/* Mobile bottom nav */}
+      <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-card/95 pb-safe backdrop-blur supports-[backdrop-filter]:bg-card/80 md:hidden">
+        <div className="flex items-stretch">
+          {NAV_ITEMS.map(({ to, label, Icon, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className="flex flex-1 flex-col items-center justify-center py-2"
+            >
+              {({ isActive }) => (
+                <>
+                  <div
+                    className={`relative flex items-center justify-center rounded-2xl px-3 py-1.5 transition-colors ${
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {label === "Grocery" && unpurchasedCount > 0 && (
+                      <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
+                        {unpurchasedCount}
+                      </span>
+                    )}
+                  </div>
+                  <span
+                    className={`mt-0.5 text-[10px] font-medium transition-colors ${
+                      isActive ? "text-primary" : "text-muted-foreground"
+                    }`}
+                  >
+                    {label}
+                  </span>
+                </>
               )}
-            </div>
-            Grocery
-          </NavLink>
-          <NavLink to="/recipes" className={mobileLink}>
-            <ChefHat className="h-5 w-5" />
-            Recipes
-          </NavLink>
-          <NavLink to="/pantry" className={mobileLink}>
-            <Package className="h-5 w-5" />
-            Pantry
-          </NavLink>
-          <NavLink to="/library" className={mobileLink}>
-            <BookOpen className="h-5 w-5" />
-            Library
-          </NavLink>
+            </NavLink>
+          ))}
         </div>
       </nav>
     </div>
