@@ -91,12 +91,15 @@ export function AppLayout() {
         </div>
       )}
 
-      <main className="flex-1 pb-20 md:pb-0">
+      <main className="flex-1 pb-24 md:pb-0">
         <Outlet />
       </main>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background md:hidden">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background md:hidden"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
         <div className="flex items-stretch">
           {NAV_ITEMS.map(({ to, label, Icon, end }) => (
             <NavLink

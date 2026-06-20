@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { IngredientFields } from "./IngredientFields";
 import { InstructionFields } from "./InstructionFields";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLibraryStore } from "@/features/library/library.store";
 import type { RecipeFormValues } from "../recipe.store";
 import type { Recipe } from "@/types";
 
@@ -42,6 +43,7 @@ interface Props {
   onClose: () => void;
   onSubmit: (values: RecipeFormValues) => void;
   defaultValues?: Recipe;
+  importDefaults?: RecipeFormValues;
   title?: string;
 }
 
@@ -82,8 +84,11 @@ export function RecipeForm({
   onClose,
   onSubmit,
   defaultValues,
+  importDefaults,
   title = "New Recipe",
 }: Props) {
+  const createLibraryItem = useLibraryStore((s) => s.createItem);
+
   const {
     register,
     control,
@@ -96,11 +101,20 @@ export function RecipeForm({
   });
 
   useEffect(() => {
-    reset(defaultValues ? recipeToForm(defaultValues) : DEFAULT);
-  }, [defaultValues, reset, open]);
+    if (importDefaults) {
+      reset(importDefaults);
+    } else {
+      reset(defaultValues ? recipeToForm(defaultValues) : DEFAULT);
+    }
+  }, [defaultValues, importDefaults, reset, open]);
 
   const submit = (values: RecipeFormValues) => {
     onSubmit(values);
+    values.ingredients.forEach((ing) => {
+      if (ing.name.trim()) {
+        createLibraryItem({ name: ing.name.trim() });
+      }
+    });
     onClose();
   };
 

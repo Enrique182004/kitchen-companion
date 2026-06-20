@@ -127,7 +127,7 @@ export function RecipesPage() {
   const [editing, setEditing] = useState<Recipe | null>(null);
   const [viewing, setViewing] = useState<Recipe | null>(null);
   const [importDefaults, setImportDefaults] = useState<
-    Partial<RecipeFormValues> | undefined
+    RecipeFormValues | undefined
   >(undefined);
 
   const {
@@ -186,17 +186,21 @@ export function RecipesPage() {
     setImportOpen(false);
     setImportDefaults({
       title: data.title,
-      description: data.description,
-      servings: data.servings,
-      prep_time_minutes: data.prep_time_minutes,
-      cook_time_minutes: data.cook_time_minutes,
+      description: data.description ?? "",
+      servings: data.servings ?? null,
+      prep_time_minutes: data.prep_time_minutes ?? null,
+      cook_time_minutes: data.cook_time_minutes ?? null,
       tags: "",
-      ingredients: data.ingredients.map((i) => ({
-        name: i.name,
-        quantity: i.quantity,
-        unit: i.unit,
-      })),
-      instructions: data.instructions.map((t) => ({ text: t })),
+      ingredients: data.ingredients.length
+        ? data.ingredients.map((i) => ({
+            name: i.name,
+            quantity: i.quantity,
+            unit: i.unit,
+          }))
+        : [{ name: "", quantity: 1, unit: "" }],
+      instructions: data.instructions.length
+        ? data.instructions.map((t) => ({ text: t }))
+        : [{ text: "" }],
     });
     setEditing(null);
     setFormOpen(true);
@@ -342,7 +346,8 @@ export function RecipesPage() {
           setImportDefaults(undefined);
         }}
         onSubmit={handleSubmit}
-        defaultValues={editing ?? (importDefaults as Recipe | undefined)}
+        defaultValues={editing ?? undefined}
+        importDefaults={!editing ? importDefaults : undefined}
         title={editing ? "Edit Recipe" : "New Recipe"}
       />
 

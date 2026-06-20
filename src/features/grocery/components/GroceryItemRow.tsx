@@ -70,7 +70,7 @@ export function GroceryItemRow({
         {/* Meta row */}
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           {/* Quantity stepper */}
-          <div className="flex items-center overflow-hidden rounded-lg border bg-muted/40">
+          <div className="flex items-center overflow-hidden rounded-lg border bg-muted">
             <button
               className="px-2 py-1 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-30"
               onClick={() =>
