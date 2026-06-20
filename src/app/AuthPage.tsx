@@ -3,36 +3,57 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 
-const schema = z.object({
+const emailSchema = z.object({
   email: z.string().email("Enter a valid email"),
 });
 
-type FormValues = z.infer<typeof schema>;
+const otpSchema = z.object({
+  token: z
+    .string()
+    .length(6, "Code must be 6 digits")
+    .regex(/^\d+$/, "Digits only"),
+});
+
+type EmailValues = z.infer<typeof emailSchema>;
+type OtpValues = z.infer<typeof otpSchema>;
 
 export function AuthPage() {
-  const { sendMagicLink } = useAuth();
-  const [sentTo, setSentTo] = useState<string | null>(null);
+  const { sendOtp, verifyOtp } = useAuth();
+  const [email, setEmail] = useState<string | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ resolver: zodResolver(schema) });
+  const emailForm = useForm<EmailValues>({
+    resolver: zodResolver(emailSchema),
+  });
 
-  const onSubmit = async ({ email }: FormValues) => {
+  const otpForm = useForm<OtpValues>({
+    resolver: zodResolver(otpSchema),
+  });
+
+  const onSendOtp = async ({ email: e }: EmailValues) => {
     try {
-      await sendMagicLink(email);
-      setSentTo(email);
+      await sendOtp(e);
+      setEmail(e);
+      otpForm.reset();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send code");
+    }
+  };
+
+  const onVerifyOtp = async ({ token }: OtpValues) => {
+    if (!email) return;
+    try {
+      await verifyOtp(email, token);
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to send magic link",
+        err instanceof Error ? err.message : "Invalid code — try again",
       );
+      otpForm.reset();
     }
   };
 
@@ -45,29 +66,83 @@ export function AuthPage() {
         </p>
       </div>
 
-      {sentTo ? (
-        <p className="text-center text-sm text-muted-foreground">
-          Check your email — we sent a magic link to <strong>{sentTo}</strong>
-        </p>
-      ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {!email ? (
+        <form
+          onSubmit={emailForm.handleSubmit(onSendOtp)}
+          className="space-y-4"
+        >
           <div className="space-y-1">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
-              {...register("email")}
+              {...emailForm.register("email")}
             />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
+            {emailForm.formState.errors.email && (
+              <p className="text-xs text-destructive">
+                {emailForm.formState.errors.email.message}
+              </p>
             )}
           </div>
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Send magic link
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={emailForm.formState.isSubmitting}
+          >
+            {emailForm.formState.isSubmitting && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            Send code
           </Button>
         </form>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-center text-sm text-muted-foreground">
+            We sent a 6-digit code to <strong>{email}</strong>. Enter it below.
+          </p>
+          <form
+            onSubmit={otpForm.handleSubmit(onVerifyOtp)}
+            className="space-y-4"
+          >
+            <div className="space-y-1">
+              <Label htmlFor="token">Verification code</Label>
+              <Input
+                id="token"
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="123456"
+                autoFocus
+                autoComplete="one-time-code"
+                {...otpForm.register("token")}
+              />
+              {otpForm.formState.errors.token && (
+                <p className="text-xs text-destructive">
+                  {otpForm.formState.errors.token.message}
+                </p>
+              )}
+            </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={otpForm.formState.isSubmitting}
+            >
+              {otpForm.formState.isSubmitting && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Verify
+            </Button>
+          </form>
+          <button
+            type="button"
+            onClick={() => setEmail(null)}
+            className="flex w-full items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            Use a different email
+          </button>
+        </div>
       )}
     </div>
   );
