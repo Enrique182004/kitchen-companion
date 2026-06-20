@@ -33,7 +33,7 @@ export function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+      <header className="sticky top-0 z-10 border-b bg-background">
         <div className="mx-auto flex max-w-2xl items-center gap-4 px-4 py-3">
           <span className="text-base font-bold tracking-tight text-primary">
             Kitchen Companion
@@ -49,7 +49,7 @@ export function AppLayout() {
                 className={({ isActive }) =>
                   `rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-secondary text-primary"
                       : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`
                 }
@@ -86,7 +86,7 @@ export function AppLayout() {
 
       {/* Offline banner */}
       {!isOnline && (
-        <div className="border-b border-yellow-200 bg-yellow-50 px-4 py-1.5 text-center text-xs text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200">
+        <div className="border-b border-yellow-200 bg-yellow-50 px-4 py-1.5 text-center text-xs text-yellow-800 dark:border-yellow-800 dark:text-yellow-200">
           You're offline — changes will sync when reconnected
         </div>
       )}
@@ -96,7 +96,7 @@ export function AppLayout() {
       </main>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-card/95 pb-safe backdrop-blur supports-[backdrop-filter]:bg-card/80 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-10 border-t bg-background md:hidden">
         <div className="flex items-stretch">
           {NAV_ITEMS.map(({ to, label, Icon, end }) => (
             <NavLink
@@ -110,7 +110,7 @@ export function AppLayout() {
                   <div
                     className={`relative flex items-center justify-center rounded-2xl px-3 py-1.5 transition-colors ${
                       isActive
-                        ? "bg-primary/10 text-primary"
+                        ? "bg-secondary text-primary"
                         : "text-muted-foreground"
                     }`}
                   >
