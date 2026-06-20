@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Search, BookOpen, Clock, Users, Star, Link } from "lucide-react";
+import {
+  Plus,
+  Search,
+  BookOpen,
+  Clock,
+  Users,
+  Star,
+  Link,
+  UtensilsCrossed,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -11,17 +20,28 @@ import {
   ImportRecipeDialog,
   type ImportedRecipe,
 } from "@/features/recipe/components/ImportRecipeDialog";
+import { usePantryStore } from "@/features/pantry/pantry.store";
 import type { Recipe } from "@/types";
 import type { RecipeFormValues } from "@/features/recipe/recipe.store";
+
+function matchCount(recipe: Recipe, pantryItems: { name: string }[]): number {
+  const pantryNames = pantryItems.map((p) => p.name.toLowerCase().trim());
+  return recipe.ingredients.filter((ing) => {
+    const n = ing.name.toLowerCase().trim();
+    return pantryNames.some((p) => p.includes(n) || n.includes(p));
+  }).length;
+}
 
 function RecipeCard({
   recipe,
   onView,
   onToggleFavorite,
+  pantryMatch,
 }: {
   recipe: Recipe;
   onView: (r: Recipe) => void;
   onToggleFavorite: (id: string) => void;
+  pantryMatch?: { matched: number; total: number };
 }) {
   const totalMins =
     (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
@@ -50,6 +70,20 @@ function RecipeCard({
           />
         </button>
       </div>
+
+      {pantryMatch !== undefined && (
+        <div className="px-4 pb-2">
+          <span
+            className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+              pantryMatch.matched > 0
+                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {pantryMatch.matched}/{pantryMatch.total} in pantry
+          </span>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 pb-3 text-xs text-muted-foreground">
         {recipe.servings && (
@@ -85,6 +119,8 @@ function RecipeCard({
 export function RecipesPage() {
   const [search, setSearch] = useState("");
   const [favOnly, setFavOnly] = useState(false);
+  const [fromPantry, setFromPantry] = useState(false);
+  const pantryItems = usePantryStore((s) => s.items);
   const [formOpen, setFormOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -121,13 +157,21 @@ export function RecipesPage() {
           x.tags.some((t) => t.toLowerCase().includes(q)),
       );
     }
+    if (fromPantry) {
+      return [...r].sort((a, b) => {
+        const diff = matchCount(b, pantryItems) - matchCount(a, pantryItems);
+        if (diff !== 0) return diff;
+        if (a.is_favorite !== b.is_favorite) return a.is_favorite ? -1 : 1;
+        return a.title.localeCompare(b.title);
+      });
+    }
     return [...r].sort((a, b) => {
       if (a.is_favorite !== b.is_favorite) return a.is_favorite ? -1 : 1;
       return (
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     });
-  }, [recipes, search, favOnly]);
+  }, [recipes, search, favOnly, fromPantry, pantryItems]);
 
   const handleSubmit = (values: RecipeFormValues) => {
     if (editing) {
@@ -227,6 +271,19 @@ export function RecipesPage() {
             Favorites
           </button>
         )}
+        <button
+          onClick={() => setFromPantry((v) => !v)}
+          className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors ${
+            fromPantry
+              ? "border-green-500 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+              : "border-border text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <UtensilsCrossed
+            className={`h-3.5 w-3.5 ${fromPantry ? "text-green-500" : ""}`}
+          />
+          From pantry
+        </button>
       </div>
 
       {recipes.length === 0 ? (
@@ -258,6 +315,14 @@ export function RecipesPage() {
               recipe={r}
               onView={openView}
               onToggleFavorite={toggleFavorite}
+              pantryMatch={
+                fromPantry
+                  ? {
+                      matched: matchCount(r, pantryItems),
+                      total: r.ingredients.length,
+                    }
+                  : undefined
+              }
             />
           ))}
         </div>

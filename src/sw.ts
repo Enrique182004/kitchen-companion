@@ -1,10 +1,27 @@
 /// <reference lib="webworker" />
 import { cleanupOutdatedCaches, precacheAndRoute } from "workbox-precaching";
+import { registerRoute, NavigationRoute } from "workbox-routing";
+import { NetworkFirst, StaleWhileRevalidate } from "workbox-strategies";
 
 declare const self: ServiceWorkerGlobalScope;
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
+
+// Navigation requests: NetworkFirst so users get fresh HTML but fall back to cache offline
+registerRoute(
+  new NavigationRoute(new NetworkFirst({ cacheName: "navigation" })),
+);
+
+// Static assets (JS, CSS, fonts, images): StaleWhileRevalidate for instant loads + background refresh
+registerRoute(
+  ({ request }) =>
+    request.destination === "script" ||
+    request.destination === "style" ||
+    request.destination === "font" ||
+    request.destination === "image",
+  new StaleWhileRevalidate({ cacheName: "static-assets" }),
+);
 
 self.addEventListener("push", (event) => {
   const data =

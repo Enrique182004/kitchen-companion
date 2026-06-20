@@ -1,6 +1,14 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
-import { Plus, Search, Trash2, BookOpen, Store, Tag } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Trash2,
+  BookOpen,
+  Store,
+  Tag,
+  ChevronDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,6 +40,179 @@ const SORT_OPTIONS: { value: SortBy; label: string }[] = [
   { value: "created_at", label: "Date Added" },
 ];
 
+function useLocalFilteredItems(items: GroceryItem[]) {
+  const searchQuery = useGroceryStore((s) => s.searchQuery);
+  const selectedCategory = useGroceryStore((s) => s.selectedCategory);
+  const sortBy = useGroceryStore((s) => s.sortBy);
+
+  return useMemo(() => {
+    let result = items;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((item) => item.name.toLowerCase().includes(q));
+    }
+    if (selectedCategory) {
+      result = result.filter((item) => item.category_id === selectedCategory);
+    }
+    return [...result].sort((a, b) => {
+      if (a.purchased !== b.purchased) return a.purchased ? 1 : -1;
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "category") {
+        return (a.categories?.name ?? "").localeCompare(
+          b.categories?.name ?? "",
+        );
+      }
+      if (sortBy === "store") {
+        return (
+          (a.store ?? "").localeCompare(b.store ?? "") ||
+          a.name.localeCompare(b.name)
+        );
+      }
+      return (
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    });
+  }, [items, searchQuery, selectedCategory, sortBy]);
+}
+
+function ListSwitcher() {
+  const [open, setOpen] = useState(false);
+  const [newListName, setNewListName] = useState("");
+  const [creatingNew, setCreatingNew] = useState(false);
+  const newListInputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const lists = useGroceryStore((s) => s.lists);
+  const activeListId = useGroceryStore((s) => s.activeListId);
+  const createList = useGroceryStore((s) => s.createList);
+  const deleteList = useGroceryStore((s) => s.deleteList);
+  const setActiveList = useGroceryStore((s) => s.setActiveList);
+
+  const activeList = lists.find((l) => l.id === activeListId);
+
+  useEffect(() => {
+    if (creatingNew) {
+      newListInputRef.current?.focus();
+    }
+  }, [creatingNew]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+        setCreatingNew(false);
+        setNewListName("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const handleCreate = () => {
+    const name = newListName.trim();
+    if (!name) return;
+    createList(name);
+    setNewListName("");
+    setCreatingNew(false);
+    setOpen(false);
+  };
+
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    deleteList(id);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1 rounded-md px-2 py-1 text-sm font-medium transition-colors hover:bg-accent"
+      >
+        <span>{activeList?.name ?? "My List"}</span>
+        {activeListId !== "default" && (
+          <span className="text-xs text-muted-foreground">(local only)</span>
+        )}
+        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+      </button>
+
+      {open && (
+        <div className="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-md border bg-popover shadow-md">
+          <ul className="py-1">
+            {lists.map((list) => (
+              <li
+                key={list.id}
+                className={`flex cursor-pointer items-center justify-between px-3 py-1.5 text-sm hover:bg-accent ${
+                  list.id === activeListId ? "font-medium" : ""
+                }`}
+                onClick={() => {
+                  setActiveList(list.id);
+                  setOpen(false);
+                }}
+              >
+                <span>{list.name}</span>
+                {list.id !== "default" && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleDelete(e, list.id)}
+                    className="ml-2 rounded p-0.5 text-muted-foreground hover:text-destructive"
+                    aria-label={`Delete list "${list.name}"`}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          <div className="border-t px-3 py-1.5">
+            {creatingNew ? (
+              <div className="flex items-center gap-1">
+                <input
+                  ref={newListInputRef}
+                  type="text"
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleCreate();
+                    if (e.key === "Escape") {
+                      setCreatingNew(false);
+                      setNewListName("");
+                    }
+                  }}
+                  placeholder="List name…"
+                  className="flex-1 rounded border bg-background px-2 py-0.5 text-sm outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleCreate}
+                  disabled={!newListName.trim()}
+                  className="rounded p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-40"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setCreatingNew(true)}
+                className="flex w-full items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                New list
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function GroceryListPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -45,13 +226,28 @@ export function GroceryListPage() {
   const sortBy = useGroceryStore((s) => s.sortBy);
   const setSortBy = useGroceryStore((s) => s.setSortBy);
   const selectedCategory = useGroceryStore((s) => s.selectedCategory);
-  const items = useGroceryStore((s) => s.items);
+  const activeListId = useGroceryStore((s) => s.activeListId);
+  const defaultItems = useGroceryStore((s) => s.items);
+  const localListItems = useGroceryStore(
+    (s) => s.localLists[s.activeListId] ?? [],
+  );
+  const addLocalItem = useGroceryStore((s) => s.addLocalItem);
+  const removeLocalItem = useGroceryStore((s) => s.removeLocalItem);
+  const updateLocalItem = useGroceryStore((s) => s.updateLocalItem);
+
+  const isDefault = activeListId === "default";
+  const items = isDefault ? defaultItems : localListItems;
 
   const restoreItems = useGroceryStore((s) => s.restoreItems);
   const { add, update, remove, markPurchased, bulkMarkPurchased } =
     useGroceryList();
   const addToPantry = usePantryStore((s) => s.addItem);
-  const filteredItems = useFilteredItems();
+
+  // For default list: use the existing hook (reads state.items). For local lists: compute inline.
+  const defaultFilteredItems = useFilteredItems();
+  const localFilteredItems = useLocalFilteredItems(localListItems);
+  const filteredItems = isDefault ? defaultFilteredItems : localFilteredItems;
+
   const { categories } = useCategories();
 
   const allPurchased = items.length > 0 && items.every((i) => i.purchased);
@@ -61,21 +257,32 @@ export function GroceryListPage() {
 
   const clearPurchased = () => {
     const snapshot = [...purchasedItems];
-    snapshot.forEach((i) => remove(i.id));
-    toast.success(
-      `${snapshot.length} item${snapshot.length !== 1 ? "s" : ""} cleared`,
-      {
-        action: {
-          label: "Undo",
-          onClick: () => restoreItems(snapshot),
+    if (isDefault) {
+      snapshot.forEach((i) => remove(i.id));
+      toast.success(
+        `${snapshot.length} item${snapshot.length !== 1 ? "s" : ""} cleared`,
+        {
+          action: {
+            label: "Undo",
+            onClick: () => restoreItems(snapshot),
+          },
+          duration: 5000,
         },
-        duration: 5000,
-      },
-    );
+      );
+    } else {
+      snapshot.forEach((i) => removeLocalItem(activeListId, i.id));
+      toast.success(
+        `${snapshot.length} item${snapshot.length !== 1 ? "s" : ""} cleared`,
+      );
+    }
   };
 
   const handleToggle = (id: string, purchased: boolean) => {
-    markPurchased(id, purchased);
+    if (isDefault) {
+      markPurchased(id, purchased);
+    } else {
+      updateLocalItem(activeListId, id, { purchased });
+    }
     if (purchased) {
       const item = items.find((i) => i.id === id);
       if (item) {
@@ -97,25 +304,47 @@ export function GroceryListPage() {
   };
 
   const handleDelete = (item: GroceryItem) => {
-    remove(item.id);
-    toast(`Removed "${item.name}"`, {
-      action: {
-        label: "Undo",
-        onClick: () => restoreItems([item]),
-      },
-      duration: 4000,
-    });
+    if (isDefault) {
+      remove(item.id);
+      toast(`Removed "${item.name}"`, {
+        action: {
+          label: "Undo",
+          onClick: () => restoreItems([item]),
+        },
+        duration: 4000,
+      });
+    } else {
+      removeLocalItem(activeListId, item.id);
+      toast(`Removed "${item.name}"`);
+    }
   };
 
   const handleAdd = async (values: GroceryItemFormValues) => {
-    await add(values);
+    if (isDefault) {
+      await add(values);
+    } else {
+      addLocalItem(activeListId, {
+        ...values,
+        id: crypto.randomUUID(),
+        user_id: "local",
+        actual_price: null,
+        purchased: false,
+        unit: values.unit ?? null,
+        store: values.store ?? null,
+        notes: values.notes ?? null,
+        estimated_price: values.estimated_price ?? null,
+        category_id: values.category_id ?? null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
   };
 
   const handleQuickAdd = async () => {
     const name = quickName.trim();
     if (!name) return;
     setQuickName("");
-    await add({
+    await handleAdd({
       name,
       quantity: 1,
       unit: undefined,
@@ -129,7 +358,7 @@ export function GroceryListPage() {
   };
 
   const handleAddFromLibrary = async (item: LibraryItem, quantity: number) => {
-    await add({
+    await handleAdd({
       name: item.name,
       quantity,
       unit: item.unit || undefined,
@@ -143,7 +372,11 @@ export function GroceryListPage() {
 
   const handleEdit = async (values: GroceryItemFormValues) => {
     if (!editingItem) return;
-    await update(editingItem.id, values);
+    if (isDefault) {
+      await update(editingItem.id, values);
+    } else {
+      updateLocalItem(activeListId, editingItem.id, values);
+    }
     setEditingItem(null);
   };
 
@@ -160,7 +393,10 @@ export function GroceryListPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4 pb-24 md:pb-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">Grocery List</h1>
+        <div className="flex flex-col gap-0.5">
+          <ListSwitcher />
+          <h1 className="text-2xl font-bold">Grocery List</h1>
+        </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -177,7 +413,7 @@ export function GroceryListPage() {
         </div>
       </div>
 
-      <TotalsBar />
+      {isDefault && <TotalsBar />}
 
       <div className="flex gap-2">
         <Input
@@ -258,12 +494,20 @@ export function GroceryListPage() {
           <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground select-none">
             <Checkbox
               checked={allPurchased}
-              onCheckedChange={(checked) =>
-                bulkMarkPurchased(
-                  items.map((i) => i.id),
-                  !!checked,
-                )
-              }
+              onCheckedChange={(checked) => {
+                if (isDefault) {
+                  bulkMarkPurchased(
+                    items.map((i) => i.id),
+                    !!checked,
+                  );
+                } else {
+                  items.forEach((i) =>
+                    updateLocalItem(activeListId, i.id, {
+                      purchased: !!checked,
+                    }),
+                  );
+                }
+              }}
             />
             {allPurchased ? "Unmark all" : "Mark all purchased"}
           </label>
@@ -306,7 +550,7 @@ export function GroceryListPage() {
               variant="outline"
               size="sm"
               onClick={async () => {
-                await add({
+                await handleAdd({
                   name: searchQuery,
                   quantity: 1,
                   unit: undefined,
@@ -336,8 +580,20 @@ export function GroceryListPage() {
             const item = items.find((i) => i.id === id);
             if (item) handleDelete(item);
           }}
-          onUpdateQuantity={(id, quantity) => update(id, { quantity })}
-          onSetActualPrice={(id, price) => update(id, { actual_price: price })}
+          onUpdateQuantity={(id, quantity) => {
+            if (isDefault) {
+              update(id, { quantity });
+            } else {
+              updateLocalItem(activeListId, id, { quantity });
+            }
+          }}
+          onSetActualPrice={(id, price) => {
+            if (isDefault) {
+              update(id, { actual_price: price });
+            } else {
+              updateLocalItem(activeListId, id, { actual_price: price });
+            }
+          }}
         />
       )}
 

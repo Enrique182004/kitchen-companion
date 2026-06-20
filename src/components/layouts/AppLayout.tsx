@@ -10,11 +10,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { useGroceryStore } from "@/features/grocery/grocery.store";
 import { useTheme } from "@/hooks/use-theme";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { NotificationBell } from "@/features/notifications/NotificationBell";
 
 export function AppLayout() {
   const { theme, toggle } = useTheme();
+  const isOnline = useOnlineStatus();
   const unpurchasedCount = useGroceryStore(
     (s) => s.items.filter((i) => !i.purchased).length,
   );
@@ -73,6 +75,12 @@ export function AppLayout() {
           </div>
         </div>
       </header>
+
+      {!isOnline && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 px-4 py-1.5 text-center text-xs text-yellow-800 dark:text-yellow-200">
+          You're offline — changes will sync when reconnected
+        </div>
+      )}
 
       <main className="flex-1 pb-16 md:pb-0">
         <Outlet />
