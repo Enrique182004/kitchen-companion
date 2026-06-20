@@ -57,7 +57,7 @@ function formToRecipe(values: RecipeFormValues, id: string): Recipe {
 
 export const useRecipeStore = create<RecipeState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       recipes: [],
 
       setRecipes: (recipes) => set({ recipes }),

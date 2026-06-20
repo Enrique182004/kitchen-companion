@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -50,7 +51,7 @@ export function PantryForm({
     reset,
     formState: { errors, isSubmitting },
   } = useForm<PantryFormValues>({
-    resolver: zodResolver(pantrySchema),
+    resolver: zodResolver(pantrySchema) as Resolver<PantryFormValues>,
     defaultValues: EMPTY,
   });
 

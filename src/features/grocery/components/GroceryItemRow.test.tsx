@@ -20,16 +20,17 @@ const fakeItem: GroceryItem = {
   updated_at: "2026-01-01",
 };
 
+const defaultProps = {
+  onToggle: vi.fn(),
+  onEdit: vi.fn(),
+  onDelete: vi.fn(),
+  onUpdateQuantity: vi.fn(),
+  onSetActualPrice: vi.fn(),
+};
+
 describe("GroceryItemRow", () => {
   it("renders item name and quantity with unit", () => {
-    render(
-      <GroceryItemRow
-        item={fakeItem}
-        onToggle={vi.fn()}
-        onEdit={vi.fn()}
-        onDelete={vi.fn()}
-      />,
-    );
+    render(<GroceryItemRow item={fakeItem} {...defaultProps} />);
     expect(screen.getByText("Milk")).toBeInTheDocument();
     expect(screen.getByText(/2 liters/)).toBeInTheDocument();
   });
@@ -37,12 +38,7 @@ describe("GroceryItemRow", () => {
   it("calls onToggle with id and true when checkbox clicked", async () => {
     const onToggle = vi.fn();
     render(
-      <GroceryItemRow
-        item={fakeItem}
-        onToggle={onToggle}
-        onEdit={vi.fn()}
-        onDelete={vi.fn()}
-      />,
+      <GroceryItemRow item={fakeItem} {...defaultProps} onToggle={onToggle} />,
     );
     await userEvent.click(screen.getByRole("checkbox"));
     expect(onToggle).toHaveBeenCalledWith("1", true);
@@ -52,9 +48,7 @@ describe("GroceryItemRow", () => {
     render(
       <GroceryItemRow
         item={{ ...fakeItem, purchased: true }}
-        onToggle={vi.fn()}
-        onEdit={vi.fn()}
-        onDelete={vi.fn()}
+        {...defaultProps}
       />,
     );
     expect(screen.getByText("Milk")).toHaveClass("line-through");
@@ -63,12 +57,7 @@ describe("GroceryItemRow", () => {
   it("calls onDelete when delete button clicked", async () => {
     const onDelete = vi.fn();
     render(
-      <GroceryItemRow
-        item={fakeItem}
-        onToggle={vi.fn()}
-        onEdit={vi.fn()}
-        onDelete={onDelete}
-      />,
+      <GroceryItemRow item={fakeItem} {...defaultProps} onDelete={onDelete} />,
     );
     await userEvent.click(screen.getByLabelText("Delete item"));
     expect(onDelete).toHaveBeenCalledWith("1");
@@ -77,12 +66,7 @@ describe("GroceryItemRow", () => {
   it("calls onEdit when edit button clicked", async () => {
     const onEdit = vi.fn();
     render(
-      <GroceryItemRow
-        item={fakeItem}
-        onToggle={vi.fn()}
-        onEdit={onEdit}
-        onDelete={vi.fn()}
-      />,
+      <GroceryItemRow item={fakeItem} {...defaultProps} onEdit={onEdit} />,
     );
     await userEvent.click(screen.getByLabelText("Edit item"));
     expect(onEdit).toHaveBeenCalledWith(fakeItem);

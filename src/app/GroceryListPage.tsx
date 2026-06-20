@@ -117,10 +117,10 @@ export function GroceryListPage() {
     await add({
       name,
       quantity: 1,
-      unit: null,
+      unit: undefined,
       estimated_price: undefined,
-      store: null,
-      notes: null,
+      store: undefined,
+      notes: undefined,
       category_id: null,
       purchased: false,
     });
@@ -131,10 +131,10 @@ export function GroceryListPage() {
     await add({
       name: item.name,
       quantity,
-      unit: item.unit || null,
+      unit: item.unit || undefined,
       estimated_price: item.estimated_price ?? undefined,
-      store: item.store || null,
-      notes: item.notes || null,
+      store: item.store || undefined,
+      notes: item.notes || undefined,
       category_id: null,
       purchased: false,
     });
@@ -284,10 +284,10 @@ export function GroceryListPage() {
                 await add({
                   name: searchQuery,
                   quantity: 1,
-                  unit: null,
+                  unit: undefined,
                   estimated_price: undefined,
-                  store: null,
-                  notes: null,
+                  store: undefined,
+                  notes: undefined,
                   category_id: null,
                   purchased: false,
                 });

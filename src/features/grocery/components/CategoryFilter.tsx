@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useGroceryStore } from "../grocery.store";
 import type { Category } from "@/types";
 
@@ -26,7 +25,7 @@ export function CategoryFilter({ categories }: Props) {
   }, [categories, selectedCategory, setSelectedCategory]);
 
   return (
-    <ScrollArea className="w-full" orientation="horizontal">
+    <div className="w-full overflow-x-auto">
       <div className="flex gap-2 pb-1">
         <Button
           size="sm"
@@ -48,6 +47,6 @@ export function CategoryFilter({ categories }: Props) {
           </Button>
         ))}
       </div>
-    </ScrollArea>
+    </div>
   );
 }

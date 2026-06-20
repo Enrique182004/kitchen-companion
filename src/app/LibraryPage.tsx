@@ -155,10 +155,10 @@ export function LibraryPage() {
     await add({
       name: item.name,
       quantity: 1,
-      unit: item.unit || null,
+      unit: item.unit || undefined,
       estimated_price: item.estimated_price ?? undefined,
-      store: item.store || null,
-      notes: item.notes || null,
+      store: item.store || undefined,
+      notes: item.notes || undefined,
       category_id: null,
       purchased: false,
     });

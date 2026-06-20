@@ -8,7 +8,7 @@ import {
   Package,
   AlertTriangle,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { useGroceryStore } from "@/features/grocery/grocery.store";
 import { useGroceryTotals } from "@/features/grocery/hooks/use-grocery-totals";
 import { usePantryStore, expiryStatus } from "@/features/pantry/pantry.store";
@@ -84,9 +84,9 @@ export function DashboardPage() {
             Your kitchen at a glance
           </p>
         </div>
-        <Button asChild size="sm">
-          <Link to="/grocery">View List</Link>
-        </Button>
+        <Link to="/grocery" className={buttonVariants({ size: "sm" })}>
+          View List
+        </Link>
       </div>
 
       {total === 0 ? (
@@ -98,9 +98,9 @@ export function DashboardPage() {
               Add some items to get started
             </p>
           </div>
-          <Button asChild>
-            <Link to="/grocery">Go to Grocery List</Link>
-          </Button>
+          <Link to="/grocery" className={buttonVariants()}>
+            Go to Grocery List
+          </Link>
         </div>
       ) : (
         <>

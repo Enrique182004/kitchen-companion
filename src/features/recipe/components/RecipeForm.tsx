@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -90,7 +91,7 @@ export function RecipeForm({
     reset,
     formState: { errors, isSubmitting },
   } = useForm<RecipeFormValues>({
-    resolver: zodResolver(recipeSchema),
+    resolver: zodResolver(recipeSchema) as Resolver<RecipeFormValues>,
     defaultValues: DEFAULT,
   });
 

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   Clock,
-  Users,
   Star,
   Pencil,
   Trash2,
@@ -75,10 +74,10 @@ export function RecipeDetailSheet({
         add({
           name: i.name,
           quantity: Math.round(i.quantity * mult * 100) / 100,
-          unit: i.unit ?? null,
+          unit: i.unit ?? undefined,
           estimated_price: undefined,
-          store: null,
-          notes: null,
+          store: undefined,
+          notes: undefined,
           category_id: null,
           purchased: false,
         }),
@@ -190,13 +189,14 @@ export function RecipeDetailSheet({
                 <label className="flex cursor-pointer items-center gap-2 text-xs text-muted-foreground">
                   <Checkbox
                     checked={
-                      checked.size === recipe.ingredients.length
-                        ? true
-                        : checked.size > 0
-                          ? "indeterminate"
-                          : false
+                      checked.size === recipe.ingredients.length &&
+                      checked.size > 0
                     }
-                    onCheckedChange={(v) => toggleAll(v === true)}
+                    indeterminate={
+                      checked.size > 0 &&
+                      checked.size < recipe.ingredients.length
+                    }
+                    onCheckedChange={(v) => toggleAll(v)}
                   />
                   Select all
                 </label>

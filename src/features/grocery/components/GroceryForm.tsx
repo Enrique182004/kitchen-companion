@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
@@ -54,7 +55,7 @@ export function GroceryForm({
     watch,
     formState: { errors, isSubmitting },
   } = useForm<GroceryItemFormValues>({
-    resolver: zodResolver(groceryItemSchema),
+    resolver: zodResolver(groceryItemSchema) as Resolver<GroceryItemFormValues>,
     defaultValues: { name: "", quantity: 1, unit: "", purchased: false },
   });
 
