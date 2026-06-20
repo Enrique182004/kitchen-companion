@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useGroceryStore } from "@/features/grocery/grocery.store";
 import { useTheme } from "@/hooks/use-theme";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { NotificationBell } from "@/features/notifications/NotificationBell";
 
 export function AppLayout() {
   const { theme, toggle } = useTheme();
@@ -52,19 +54,23 @@ export function AppLayout() {
               Dashboard
             </NavLink>
           </nav>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggle}
-            aria-label="Toggle dark mode"
-            className="ml-auto h-8 w-8"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
-          </Button>
+          <div className="ml-auto flex items-center gap-1">
+            <GlobalSearch />
+            <NotificationBell />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggle}
+              aria-label="Toggle dark mode"
+              className="h-8 w-8"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
       </header>
 

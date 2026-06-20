@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -238,6 +239,17 @@ export function GroceryForm({
               {...register("notes")}
               placeholder="Optional note"
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={watch("recurring") ?? false}
+              onCheckedChange={(v) => setValue("recurring", !!v)}
+              id="item-recurring"
+            />
+            <Label htmlFor="item-recurring">
+              Add to every trip (recurring)
+            </Label>
           </div>
 
           <DialogFooter>

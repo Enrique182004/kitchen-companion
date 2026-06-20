@@ -14,6 +14,8 @@ interface GroceryState {
   restoreItems: (items: GroceryItem[]) => void;
   updateItem: (id: string, changes: Partial<GroceryItem>) => void;
   removeItem: (id: string) => void;
+  reorderItems: (orderedIds: string[]) => void;
+  getRecurring: () => GroceryItem[];
   setTripBudget: (budget: number | null) => void;
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: string | null) => void;
@@ -23,7 +25,7 @@ interface GroceryState {
 
 export const useGroceryStore = create<GroceryState>()(
   persist(
-    (set) => ({
+    (set): GroceryState => ({
       items: [],
       tripBudget: null,
       searchQuery: "",
@@ -52,6 +54,17 @@ export const useGroceryStore = create<GroceryState>()(
         set((state) => ({
           items: state.items.filter((item) => item.id !== id),
         })),
+      reorderItems: (orderedIds) =>
+        set((state) => {
+          const map = new Map(state.items.map((i) => [i.id, i]));
+          const reordered = orderedIds
+            .map((id) => map.get(id))
+            .filter(Boolean) as GroceryItem[];
+          const rest = state.items.filter((i) => !orderedIds.includes(i.id));
+          return { items: [...reordered, ...rest] };
+        }),
+      getRecurring: () =>
+        useGroceryStore.getState().items.filter((i) => i.recurring),
       setTripBudget: (tripBudget) => set({ tripBudget }),
       setSearchQuery: (searchQuery) => set({ searchQuery }),
       setSelectedCategory: (selectedCategory) => set({ selectedCategory }),

@@ -1,6 +1,24 @@
 import { useMemo, useState } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { SortableGroceryItem } from "./SortableGroceryItem";
 import { GroceryItemRow } from "./GroceryItemRow";
+import { useGroceryStore } from "@/features/grocery/grocery.store";
 import type { GroceryItem } from "@/types";
 
 interface Handlers {
@@ -15,28 +33,10 @@ interface Props extends Handlers {
   activeItems: GroceryItem[];
   purchasedItems: GroceryItem[];
   selectedCategory: string | null;
+  groupBy?: "category" | "store";
 }
 
-function ItemRow({
-  item,
-  handlers,
-}: {
-  item: GroceryItem;
-  handlers: Handlers;
-}) {
-  return (
-    <GroceryItemRow
-      item={item}
-      onToggle={handlers.onToggle}
-      onEdit={handlers.onEdit}
-      onDelete={handlers.onDelete}
-      onUpdateQuantity={handlers.onUpdateQuantity}
-      onSetActualPrice={handlers.onSetActualPrice}
-    />
-  );
-}
-
-function CategorySection({
+function Section({
   name,
   items,
   handlers,
@@ -51,7 +51,7 @@ function CategorySection({
         {name}
       </p>
       {items.map((item) => (
-        <ItemRow key={item.id} item={item} handlers={handlers} />
+        <SortableGroceryItem key={item.id} item={item} {...handlers} />
       ))}
     </div>
   );
@@ -61,17 +61,56 @@ export function GroupedGroceryList({
   activeItems,
   purchasedItems,
   selectedCategory,
+  groupBy = "category",
   ...handlers
 }: Props) {
   const [purchasedOpen, setPurchasedOpen] = useState(false);
+  const reorderItems = useGroceryStore((s) => s.reorderItems);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = activeItems.findIndex((i) => i.id === active.id);
+    const newIndex = activeItems.findIndex((i) => i.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reordered = arrayMove(activeItems, oldIndex, newIndex);
+    reorderItems(reordered.map((i) => i.id));
+  };
 
   const grouped = useMemo(() => {
+    if (groupBy === "store") {
+      const map = new Map<string, GroceryItem[]>();
+      const noStore: GroceryItem[] = [];
+      for (const item of activeItems) {
+        const key = item.store?.trim();
+        if (key) {
+          if (!map.has(key)) map.set(key, []);
+          map.get(key)!.push(item);
+        } else {
+          noStore.push(item);
+        }
+      }
+      const sections = [...map.entries()].sort(([a], [b]) =>
+        a.localeCompare(b),
+      );
+      return { sections, uncategorized: noStore };
+    }
+
     const hasCats = activeItems.some((i) => i.categories);
     if (!hasCats || selectedCategory) return null;
 
     const map = new Map<string, GroceryItem[]>();
     const uncategorized: GroceryItem[] = [];
-
     for (const item of activeItems) {
       if (item.categories) {
         const name = item.categories.name;
@@ -81,38 +120,50 @@ export function GroupedGroceryList({
         uncategorized.push(item);
       }
     }
-
     const sections = [...map.entries()].sort(([a], [b]) => a.localeCompare(b));
     return { sections, uncategorized };
-  }, [activeItems, selectedCategory]);
+  }, [activeItems, selectedCategory, groupBy]);
+
+  const fallbackLabel = groupBy === "store" ? "No store specified" : "Other";
 
   return (
     <div className="space-y-4">
-      {grouped ? (
-        <>
-          {grouped.sections.map(([name, items]) => (
-            <CategorySection
-              key={name}
-              name={name}
-              items={items}
-              handlers={handlers}
-            />
-          ))}
-          {grouped.uncategorized.length > 0 && (
-            <CategorySection
-              name="Other"
-              items={grouped.uncategorized}
-              handlers={handlers}
-            />
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={activeItems.map((i) => i.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {grouped ? (
+            <>
+              {grouped.sections.map(([name, items]) => (
+                <Section
+                  key={name}
+                  name={name}
+                  items={items}
+                  handlers={handlers}
+                />
+              ))}
+              {grouped.uncategorized.length > 0 && (
+                <Section
+                  name={fallbackLabel}
+                  items={grouped.uncategorized}
+                  handlers={handlers}
+                />
+              )}
+            </>
+          ) : (
+            <div className="space-y-2">
+              {activeItems.map((item) => (
+                <SortableGroceryItem key={item.id} item={item} {...handlers} />
+              ))}
+            </div>
           )}
-        </>
-      ) : (
-        <div className="space-y-2">
-          {activeItems.map((item) => (
-            <ItemRow key={item.id} item={item} handlers={handlers} />
-          ))}
-        </div>
-      )}
+        </SortableContext>
+      </DndContext>
 
       {purchasedItems.length > 0 && (
         <div className="border-t pt-2">
@@ -130,7 +181,7 @@ export function GroupedGroceryList({
           {purchasedOpen && (
             <div className="space-y-2 pt-1">
               {purchasedItems.map((item) => (
-                <ItemRow key={item.id} item={item} handlers={handlers} />
+                <GroceryItemRow key={item.id} item={item} {...handlers} />
               ))}
             </div>
           )}

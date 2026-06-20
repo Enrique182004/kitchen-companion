@@ -18,6 +18,7 @@ export interface GroceryItem {
   store: string | null;
   purchased: boolean;
   notes: string | null;
+  recurring?: boolean;
   created_at: string;
   updated_at: string;
   categories?: Pick<Category, "id" | "name"> | null;

@@ -18,6 +18,7 @@ export const groceryItemSchema = z.object({
   store: z.string().optional(),
   purchased: z.boolean().optional().default(false),
   notes: z.string().optional(),
+  recurring: z.boolean().optional(),
 });
 
 export type GroceryItemFormValues = z.infer<typeof groceryItemSchema>;

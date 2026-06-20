@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Search, BookOpen, Clock, Users, Star } from "lucide-react";
+import { Plus, Search, BookOpen, Clock, Users, Star, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useRecipeSync } from "@/features/recipe/hooks/use-recipe-sync";
 import { RecipeForm } from "@/features/recipe/components/RecipeForm";
 import { RecipeDetailSheet } from "@/features/recipe/components/RecipeDetailSheet";
+import {
+  ImportRecipeDialog,
+  type ImportedRecipe,
+} from "@/features/recipe/components/ImportRecipeDialog";
 import type { Recipe } from "@/types";
 import type { RecipeFormValues } from "@/features/recipe/recipe.store";
 
@@ -82,9 +86,13 @@ export function RecipesPage() {
   const [search, setSearch] = useState("");
   const [favOnly, setFavOnly] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [editing, setEditing] = useState<Recipe | null>(null);
   const [viewing, setViewing] = useState<Recipe | null>(null);
+  const [importDefaults, setImportDefaults] = useState<
+    Partial<RecipeFormValues> | undefined
+  >(undefined);
 
   const {
     recipes,
@@ -130,9 +138,30 @@ export function RecipesPage() {
     }
   };
 
+  const handleImport = (data: ImportedRecipe) => {
+    setImportOpen(false);
+    setImportDefaults({
+      title: data.title,
+      description: data.description,
+      servings: data.servings,
+      prep_time_minutes: data.prep_time_minutes,
+      cook_time_minutes: data.cook_time_minutes,
+      tags: "",
+      ingredients: data.ingredients.map((i) => ({
+        name: i.name,
+        quantity: i.quantity,
+        unit: i.unit,
+      })),
+      instructions: data.instructions.map((t) => ({ text: t })),
+    });
+    setEditing(null);
+    setFormOpen(true);
+  };
+
   const openEdit = (recipe: Recipe) => {
     setDetailOpen(false);
     setEditing(recipe);
+    setImportDefaults(undefined);
     setFormOpen(true);
   };
 
@@ -150,16 +179,27 @@ export function RecipesPage() {
             {recipes.length} recipe{recipes.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Button
-          size="sm"
-          onClick={() => {
-            setEditing(null);
-            setFormOpen(true);
-          }}
-        >
-          <Plus className="mr-1 h-4 w-4" />
-          New Recipe
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setImportOpen(true)}
+          >
+            <Link className="mr-1 h-4 w-4" />
+            Import URL
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => {
+              setEditing(null);
+              setImportDefaults(undefined);
+              setFormOpen(true);
+            }}
+          >
+            <Plus className="mr-1 h-4 w-4" />
+            New Recipe
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-2">
@@ -223,14 +263,21 @@ export function RecipesPage() {
         </div>
       )}
 
+      <ImportRecipeDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImport={handleImport}
+      />
+
       <RecipeForm
         open={formOpen}
         onClose={() => {
           setFormOpen(false);
           setEditing(null);
+          setImportDefaults(undefined);
         }}
         onSubmit={handleSubmit}
-        defaultValues={editing ?? undefined}
+        defaultValues={editing ?? (importDefaults as Recipe | undefined)}
         title={editing ? "Edit Recipe" : "New Recipe"}
       />
 

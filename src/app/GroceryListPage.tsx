@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Search, Trash2, BookOpen } from "lucide-react";
+import { Plus, Search, Trash2, BookOpen, Store, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,6 +37,7 @@ export function GroceryListPage() {
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<GroceryItem | null>(null);
   const [quickName, setQuickName] = useState("");
+  const [groupBy, setGroupBy] = useState<"category" | "store">("category");
   const quickInputRef = useRef<HTMLInputElement>(null);
 
   const searchQuery = useGroceryStore((s) => s.searchQuery);
@@ -226,7 +227,31 @@ export function GroceryListPage() {
         </Select>
       </div>
 
-      {categories.length > 0 && <CategoryFilter categories={categories} />}
+      <div className="flex items-center gap-2">
+        {categories.length > 0 && <CategoryFilter categories={categories} />}
+        <button
+          type="button"
+          onClick={() =>
+            setGroupBy((v) => (v === "category" ? "store" : "category"))
+          }
+          className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          title={
+            groupBy === "category" ? "Group by store" : "Group by category"
+          }
+        >
+          {groupBy === "category" ? (
+            <>
+              <Store className="h-3.5 w-3.5" />
+              By store
+            </>
+          ) : (
+            <>
+              <Tag className="h-3.5 w-3.5" />
+              By category
+            </>
+          )}
+        </button>
+      </div>
 
       <div className="flex items-center justify-between min-h-[2rem]">
         {items.length > 0 && (
@@ -304,6 +329,7 @@ export function GroceryListPage() {
           activeItems={activeFiltered}
           purchasedItems={purchasedFiltered}
           selectedCategory={selectedCategory}
+          groupBy={groupBy}
           onToggle={handleToggle}
           onEdit={openEdit}
           onDelete={(id) => {
