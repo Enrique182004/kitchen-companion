@@ -22,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useGroceryStore } from "@/features/grocery/grocery.store";
 import { useGroceryList } from "@/features/grocery/hooks/use-grocery-list";
 import { usePantryStore } from "@/features/pantry/pantry.store";
+import { useLibraryStore } from "@/features/library/library.store";
 import { useFilteredItems } from "@/features/grocery/hooks/use-filtered-items";
 import { useCategories } from "@/features/grocery/hooks/use-categories";
 import { CategoryFilter } from "@/features/grocery/components/CategoryFilter";
@@ -242,6 +243,7 @@ export function GroceryListPage() {
   const { add, update, remove, markPurchased, bulkMarkPurchased } =
     useGroceryList();
   const addToPantry = usePantryStore((s) => s.addItem);
+  const saveToLibrary = useLibraryStore((s) => s.saveFromForm);
 
   // For default list: use the existing hook (reads state.items). For local lists: compute inline.
   const defaultFilteredItems = useFilteredItems();
@@ -321,8 +323,9 @@ export function GroceryListPage() {
 
   const handleAdd = async (values: GroceryItemFormValues) => {
     if (isDefault) {
-      await add(values);
+      await add(values); // saveToLibrary already called inside use-grocery-list
     } else {
+      saveToLibrary(values);
       addLocalItem(activeListId, {
         ...values,
         id: crypto.randomUUID(),
