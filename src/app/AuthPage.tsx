@@ -3,58 +3,46 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 
-const emailSchema = z.object({
+const schema = z.object({
   email: z.string().email("Enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-const otpSchema = z.object({
-  token: z
-    .string()
-    .length(6, "Code must be 6 digits")
-    .regex(/^\d+$/, "Digits only"),
-});
-
-type EmailValues = z.infer<typeof emailSchema>;
-type OtpValues = z.infer<typeof otpSchema>;
+type FormValues = z.infer<typeof schema>;
 
 export function AuthPage() {
-  const { sendOtp, verifyOtp } = useAuth();
-  const [email, setEmail] = useState<string | null>(null);
+  const { signIn, signUp } = useAuth();
+  const [tab, setTab] = useState<"signin" | "signup">("signin");
 
-  const emailForm = useForm<EmailValues>({
-    resolver: zodResolver(emailSchema),
-  });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
-  const otpForm = useForm<OtpValues>({
-    resolver: zodResolver(otpSchema),
-  });
-
-  const onSendOtp = async ({ email: e }: EmailValues) => {
+  const onSubmit = async ({ email, password }: FormValues) => {
     try {
-      await sendOtp(e);
-      setEmail(e);
-      otpForm.reset();
+      if (tab === "signin") {
+        await signIn(email, password);
+      } else {
+        await signUp(email, password);
+        toast.success("Account created! You are now signed in.");
+      }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to send code");
+      toast.error(err instanceof Error ? err.message : "Authentication failed");
     }
   };
 
-  const onVerifyOtp = async ({ token }: OtpValues) => {
-    if (!email) return;
-    try {
-      await verifyOtp(email, token);
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Invalid code — try again",
-      );
-      otpForm.reset();
-    }
+  const switchTab = (next: "signin" | "signup") => {
+    setTab(next);
+    reset();
   };
 
   return (
@@ -66,84 +54,69 @@ export function AuthPage() {
         </p>
       </div>
 
-      {!email ? (
-        <form
-          onSubmit={emailForm.handleSubmit(onSendOtp)}
-          className="space-y-4"
+      <div className="flex rounded-lg border p-1">
+        <button
+          type="button"
+          onClick={() => switchTab("signin")}
+          className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
+            tab === "signin"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
         >
-          <div className="space-y-1">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              {...emailForm.register("email")}
-            />
-            {emailForm.formState.errors.email && (
-              <p className="text-xs text-destructive">
-                {emailForm.formState.errors.email.message}
-              </p>
-            )}
-          </div>
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={emailForm.formState.isSubmitting}
-          >
-            {emailForm.formState.isSubmitting && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
-            Send code
-          </Button>
-        </form>
-      ) : (
-        <div className="space-y-4">
-          <p className="text-center text-sm text-muted-foreground">
-            We sent a 6-digit code to <strong>{email}</strong>. Enter it below.
-          </p>
-          <form
-            onSubmit={otpForm.handleSubmit(onVerifyOtp)}
-            className="space-y-4"
-          >
-            <div className="space-y-1">
-              <Label htmlFor="token">Verification code</Label>
-              <Input
-                id="token"
-                type="text"
-                inputMode="numeric"
-                maxLength={6}
-                placeholder="123456"
-                autoFocus
-                autoComplete="one-time-code"
-                {...otpForm.register("token")}
-              />
-              {otpForm.formState.errors.token && (
-                <p className="text-xs text-destructive">
-                  {otpForm.formState.errors.token.message}
-                </p>
-              )}
-            </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={otpForm.formState.isSubmitting}
-            >
-              {otpForm.formState.isSubmitting && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              Verify
-            </Button>
-          </form>
-          <button
-            type="button"
-            onClick={() => setEmail(null)}
-            className="flex w-full items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-3 w-3" />
-            Use a different email
-          </button>
+          Sign in
+        </button>
+        <button
+          type="button"
+          onClick={() => switchTab("signup")}
+          className={`flex-1 rounded-md py-1.5 text-sm font-medium transition-colors ${
+            tab === "signup"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Create account
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="space-y-1">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+            {...register("email")}
+          />
+          {errors.email && (
+            <p className="text-xs text-destructive">{errors.email.message}</p>
+          )}
         </div>
-      )}
+
+        <div className="space-y-1">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            autoComplete={
+              tab === "signin" ? "current-password" : "new-password"
+            }
+            {...register("password")}
+          />
+          {errors.password && (
+            <p className="text-xs text-destructive">
+              {errors.password.message}
+            </p>
+          )}
+        </div>
+
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {tab === "signin" ? "Sign in" : "Create account"}
+        </Button>
+      </form>
     </div>
   );
 }

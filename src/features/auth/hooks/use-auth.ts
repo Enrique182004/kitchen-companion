@@ -5,20 +5,16 @@ import { useAuthStore } from "../auth.store";
 export function useAuth() {
   const { setSession, setLoading } = useAuthStore();
 
-  const sendOtp = useCallback(async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
+  const signIn = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      options: { shouldCreateUser: true },
+      password,
     });
     if (error) throw error;
   }, []);
 
-  const verifyOtp = useCallback(async (email: string, token: string) => {
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: "email",
-    });
+  const signUp = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
   }, []);
 
@@ -29,5 +25,5 @@ export function useAuth() {
     setLoading(false);
   }, [setSession, setLoading]);
 
-  return { sendOtp, verifyOtp, signOut };
+  return { signIn, signUp, signOut };
 }
