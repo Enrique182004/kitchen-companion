@@ -515,6 +515,44 @@ const SEED_RECIPES: Omit<RecipeFormValues, never>[] = [
       },
     ],
   },
+  {
+    title: "Sándwich de Huevo",
+    description:
+      "Sándwich crujiente de huevo con queso derretido, tomate, cebolla y salsa de tomate. Rápido y delicioso.",
+    servings: 1,
+    prep_time_minutes: 5,
+    cook_time_minutes: 8,
+    tags: "sándwich, huevo, queso, desayuno, rápido",
+    ingredients: [
+      { name: "Rebanadas de pan", quantity: 2, unit: "" },
+      { name: "Huevos", quantity: 2, unit: "" },
+      { name: "Sal al gusto", quantity: 1, unit: "al gusto" },
+      { name: "Pimienta", quantity: 0.5, unit: "cdta" },
+      { name: "Hojuelas de chile", quantity: 0.5, unit: "cdta" },
+      { name: "Mantequilla", quantity: 0.5, unit: "cdta" },
+      { name: "Rebanadas de tomate", quantity: 2, unit: "" },
+      { name: "Rebanada de queso", quantity: 1, unit: "" },
+      { name: "Rebanadas de cebolla", quantity: 2, unit: "" },
+      { name: "Salsa de tomate", quantity: 1, unit: "cda" },
+    ],
+    instructions: [
+      {
+        text: "Calentar la mantequilla en un sartén a fuego medio y colocar las rebanadas de pan cortadas en triángulos.",
+      },
+      {
+        text: "Romper los huevos directamente sobre el pan, revolver y dejar cocinar 3-4 minutos.",
+      },
+      {
+        text: "Voltear el pan con el huevo y agregar el tomate, la cebolla, la rebanada de queso y la salsa de tomate.",
+      },
+      {
+        text: "Dejar que el queso se derrita y voltear el sándwich para calentar el otro lado.",
+      },
+      {
+        text: "Cortar a la mitad y servir.",
+      },
+    ],
+  },
 ];
 
 export function useRecipeSync() {
