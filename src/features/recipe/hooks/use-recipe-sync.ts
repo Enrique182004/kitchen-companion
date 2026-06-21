@@ -170,6 +170,36 @@ export function useRecipeSync() {
 
     const userId = user.id;
 
+    const buildLocalRecipes = (): Recipe[] => {
+      const now = new Date().toISOString();
+      return SEED_RECIPES.map((r) => ({
+        id: crypto.randomUUID(),
+        user_id: userId,
+        title: r.title,
+        description: r.description || null,
+        image_url: null,
+        servings: r.servings || null,
+        prep_time_minutes: r.prep_time_minutes || null,
+        cook_time_minutes: r.cook_time_minutes || null,
+        tags: r.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+        ingredients: r.ingredients
+          .filter((i) => i.name.trim())
+          .map((i) => ({
+            id: crypto.randomUUID(),
+            name: i.name.trim(),
+            quantity: Number(i.quantity) || 1,
+            unit: i.unit.trim() || null,
+          })),
+        instructions: r.instructions.map((s) => s.text.trim()).filter(Boolean),
+        is_favorite: false,
+        created_at: now,
+        updated_at: now,
+      }));
+    };
+
     recipeService
       .fetchRecipes(userId)
       .then(async (fetched) => {
@@ -177,49 +207,35 @@ export function useRecipeSync() {
           setRecipes(fetched);
           return;
         }
-        // Seed default recipes one at a time so a single failure doesn't block others
-        const results: Recipe[] = [];
-        for (const r of SEED_RECIPES) {
+        // Show locally first so UI is responsive immediately
+        const localRecipes = buildLocalRecipes();
+        setRecipes(localRecipes);
+        // Then persist to Supabase in background
+        const saved: Recipe[] = [];
+        for (const recipe of localRecipes) {
           try {
-            const saved = await recipeService.addRecipe({
-              id: crypto.randomUUID(),
-              user_id: userId,
-              title: r.title,
-              description: r.description || null,
-              image_url: null,
-              servings: r.servings || null,
-              prep_time_minutes: r.prep_time_minutes || null,
-              cook_time_minutes: r.cook_time_minutes || null,
-              tags: r.tags
-                .split(",")
-                .map((t) => t.trim())
-                .filter(Boolean),
-              ingredients: r.ingredients
-                .filter((i) => i.name.trim())
-                .map((i) => ({
-                  id: crypto.randomUUID(),
-                  name: i.name.trim(),
-                  quantity: Number(i.quantity) || 1,
-                  unit: i.unit.trim() || null,
-                })),
-              instructions: r.instructions
-                .map((s) => s.text.trim())
-                .filter(Boolean),
-              is_favorite: false,
-            });
-            results.push(saved);
+            const s = await recipeService.addRecipe(recipe);
+            saved.push(s);
           } catch (e) {
-            console.error("[recipe seed] failed to save", r.title, e);
+            console.error("[recipe seed] failed to save", recipe.title, e);
+            saved.push(recipe);
           }
         }
-        setRecipes(results);
+        setRecipes(saved);
       })
-      .catch((e) => console.error("[recipe fetch] failed", e));
+      .catch((e) => {
+        console.error("[recipe fetch] failed", e);
+        // Fetch failed — still show seed recipes locally
+        setRecipes(buildLocalRecipes());
+      });
 
     const onFocus = () => {
       recipeService
         .fetchRecipes(userId)
-        .then(setRecipes)
+        .then((fetched) => {
+          // Only overwrite if Supabase returned data; keep local recipes otherwise
+          if (fetched.length > 0) setRecipes(fetched);
+        })
         .catch(() => {});
     };
     window.addEventListener("focus", onFocus);
