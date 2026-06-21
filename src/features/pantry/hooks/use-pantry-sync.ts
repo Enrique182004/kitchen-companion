@@ -7,6 +7,23 @@ import type { PantryFormValues } from "../pantry.store";
 
 const isDemo = !import.meta.env.VITE_SUPABASE_URL;
 
+const SEED_PANTRY: Array<{
+  name: string;
+  quantity: number;
+  unit: string | null;
+}> = [
+  { name: "Sal", quantity: 1, unit: null },
+  { name: "Paprika", quantity: 1, unit: null },
+  { name: "Cereal", quantity: 1, unit: null },
+  { name: "Sopa de espagueti", quantity: 2, unit: "sopas" },
+  { name: "Sopa de fideos", quantity: 2, unit: "sopas" },
+  { name: "Pepino", quantity: 1, unit: null },
+  { name: "Cebolla", quantity: 1, unit: null },
+  { name: "Cebolla morada", quantity: 1, unit: null },
+  { name: "Limones", quantity: 10, unit: null },
+  { name: "Salmón", quantity: 1, unit: null },
+];
+
 export function usePantrySync() {
   const user = useAuthStore((state) => state.user);
   const { items, setItems, addItem, updateItem, removeItem, restoreItem } =
@@ -15,9 +32,37 @@ export function usePantrySync() {
   useEffect(() => {
     if (isDemo || !user) return;
 
-    pantryService.fetchItems(user.id).then(setItems);
+    const userId = user.id;
 
-    const handleFocus = () => pantryService.fetchItems(user.id).then(setItems);
+    pantryService.fetchItems(userId).then(async (fetched) => {
+      if (fetched.length > 0) {
+        setItems(fetched);
+        return;
+      }
+      const saved: PantryItem[] = [];
+      for (const seed of SEED_PANTRY) {
+        try {
+          const s = await pantryService.addItem({
+            user_id: userId,
+            name: seed.name,
+            quantity: seed.quantity,
+            unit: seed.unit,
+            category_id: null,
+            expiration_date: null,
+          });
+          saved.push(s);
+        } catch (e) {
+          console.error("[pantry seed] failed", seed.name, e);
+        }
+      }
+      setItems(saved);
+    });
+
+    const handleFocus = () => {
+      pantryService.fetchItems(userId).then((fetched) => {
+        if (fetched.length > 0) setItems(fetched);
+      });
+    };
     window.addEventListener("focus", handleFocus);
 
     return () => {
