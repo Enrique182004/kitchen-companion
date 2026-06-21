@@ -151,6 +151,63 @@ const SEED_RECIPES: Omit<RecipeFormValues, never>[] = [
       },
     ],
   },
+  {
+    title: "Fajitas de pollo en Salsa de Chipotle",
+    description:
+      "Fajitas de pollo asadas bañadas en cremosa salsa de chipotle con leche Carnation.",
+    servings: 4,
+    prep_time_minutes: 10,
+    cook_time_minutes: 20,
+    tags: "pollo, chipotle, salsa, fajitas",
+    ingredients: [
+      { name: "Leche Carnation", quantity: 0.5, unit: "lata" },
+      { name: "Dadito de Sazón sabor cebolla-ajo", quantity: 1, unit: "" },
+      { name: "Cubo de caldo de pollo", quantity: 1, unit: "" },
+      { name: "Chiles chipotles de lata", quantity: 2, unit: "" },
+      { name: "Agua", quantity: 1.5, unit: "tza" },
+      { name: "Fajitas de pollo, asadas", quantity: 450, unit: "g" },
+    ],
+    instructions: [
+      {
+        text: "Licua todos los ingredientes, excepto el pollo.",
+      },
+      {
+        text: "Cuela y calienta de 10 a 15 min o hasta que espese tomando la consistencia deseada, moviendo constantemente para evitar que se pegue.",
+      },
+      {
+        text: "Retira del fuego, baña las fajitas con la salsa y listo.",
+      },
+    ],
+  },
+  {
+    title: "Pasta de Chipotle con Tocino Philadelphia",
+    description:
+      "Tallarines con cremosa salsa de philadelphia chipotle y tocino frito.",
+    servings: 4,
+    prep_time_minutes: 15,
+    cook_time_minutes: 15,
+    tags: "pasta, chipotle, tocino, philadelphia, tallarines",
+    ingredients: [
+      { name: "Philadelphia sabor chipotle", quantity: 190, unit: "g" },
+      { name: "Tocino frito en trozos", quantity: 0.5, unit: "tza" },
+      { name: "Leche", quantity: 2, unit: "tzas" },
+      { name: "Caldo de pollo", quantity: 1, unit: "tza" },
+      { name: "Cebolla", quantity: 0.75, unit: "tza" },
+      { name: "Aceite", quantity: 2, unit: "cdas" },
+      { name: "Tallarines", quantity: 600, unit: "g" },
+    ],
+    instructions: [
+      {
+        text: "Calentar una sartén con aceite y freír la cebolla hasta dorar.",
+      },
+      {
+        text: "Licuar todos los ingredientes de la salsa, calentar en una cacerola hasta que suelte el hervor y servir sobre los tallarines cocidos.",
+      },
+      {
+        text: "Decorar con trocitos de tocino y servir.",
+      },
+    ],
+  },
 ];
 
 export function useRecipeSync() {
