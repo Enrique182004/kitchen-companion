@@ -553,6 +553,52 @@ const SEED_RECIPES: Omit<RecipeFormValues, never>[] = [
       },
     ],
   },
+  {
+    title: "Rollitos de Pollo Rellenos en Crema de Chipotle",
+    description:
+      "Milanesas de pollo rellenas de jamón y queso, doradas en sartén y bañadas en cremosa salsa de chipotle. Acompañadas de arroz y vegetales al vapor.",
+    servings: 4,
+    prep_time_minutes: 15,
+    cook_time_minutes: 20,
+    tags: "pollo, chipotle, relleno, cremoso, rollitos",
+    ingredients: [
+      { name: "Pechuga o milanesa de pollo", quantity: 600, unit: "g" },
+      { name: "Sazonador Fajitas Pragná", quantity: 1, unit: "al gusto" },
+      { name: "Paprika Pragná", quantity: 1, unit: "al gusto" },
+      { name: "Sal del Himalaya Pragná", quantity: 1, unit: "al gusto" },
+      { name: "Media crema", quantity: 250, unit: "g" },
+      { name: "Chiles chipotle", quantity: 2, unit: "" },
+      { name: "Ajo en polvo y pimienta", quantity: 1, unit: "al gusto" },
+      { name: "Queso rallado", quantity: 1, unit: "al gusto" },
+      { name: "Jamón", quantity: 1, unit: "al gusto" },
+      { name: "Cilantro", quantity: 1, unit: "al gusto" },
+      {
+        name: "Arroz, brócoli y zanahoria al vapor (para acompañar)",
+        quantity: 1,
+        unit: "porción",
+      },
+    ],
+    instructions: [
+      {
+        text: "Extender las milanesas y sazonar por ambos lados con sazonador fajitas, paprika y sal del Himalaya al gusto.",
+      },
+      {
+        text: "Rellenar cada milanesa con jamón y queso rallado, enrollar y asegurar si es necesario.",
+      },
+      {
+        text: "Dorar los rollitos en un sartén con un poco de aceite hasta que queden bien cocidos. Retirar y reservar.",
+      },
+      {
+        text: "Licuar la media crema con los chiles chipotle, pimienta, ajo en polvo y sal hasta obtener una salsa homogénea.",
+      },
+      {
+        text: "Calentar la salsa en el mismo sartén y regresar los rollitos. Agregar cilantro picado.",
+      },
+      {
+        text: "Servir acompañados de arroz y vegetales al vapor.",
+      },
+    ],
+  },
 ];
 
 export function useRecipeSync() {
