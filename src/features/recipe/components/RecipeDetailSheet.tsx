@@ -94,7 +94,7 @@ export function RecipeDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent className="flex w-full flex-col gap-0 sm:max-w-md">
+      <SheetContent className="flex w-full flex-col gap-0 overflow-hidden sm:max-w-md">
         <SheetHeader className="pb-3">
           <div className="flex items-start justify-between gap-2 pr-8">
             <SheetTitle className="text-left">{recipe.title}</SheetTitle>
@@ -155,7 +155,7 @@ export function RecipeDetailSheet({
 
         <Separator />
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="min-h-0 flex-1">
           <div className="space-y-5 py-4">
             {recipe.ingredients.length > 0 && (
               <div className="space-y-3 px-1">
