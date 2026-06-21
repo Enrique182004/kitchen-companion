@@ -7,6 +7,152 @@ import type { RecipeFormValues } from "../recipe.store";
 
 const isDemo = !import.meta.env.VITE_SUPABASE_URL;
 
+const SEED_RECIPES: Omit<RecipeFormValues, never>[] = [
+  {
+    title: "Carne de res con brócoli",
+    description: "Carne en cuadritos salteada con brócoli y salsa Maggi.",
+    servings: 3,
+    prep_time_minutes: 10,
+    cook_time_minutes: 20,
+    tags: "carne, brócoli, sartén",
+    ingredients: [
+      { name: "Brócoli", quantity: 1, unit: "cabeza" },
+      { name: "Carne de res en cuadritos (bistec)", quantity: 500, unit: "g" },
+      { name: "Maizena", quantity: 2, unit: "cdas" },
+      { name: "Salsa Maggi", quantity: 1, unit: "al gusto" },
+      { name: "Aceite", quantity: 2, unit: "cdas" },
+      { name: "Sal", quantity: 1, unit: "al gusto" },
+      { name: "Pimienta", quantity: 1, unit: "al gusto" },
+    ],
+    instructions: [
+      { text: "Sazonar el brócoli con aceite y reservar." },
+      {
+        text: "Poner los cuadritos de carne en un bowl y mezclar con poca maizena.",
+      },
+      {
+        text: "En una sartén calentar aceite y cocinar la carne con sal y pimienta hasta que esté lista.",
+      },
+      {
+        text: "Agregar el brócoli a la carne y revolver poco a poco con salsa Maggi. ¡Listo!",
+      },
+    ],
+  },
+  {
+    title: "Pasta Alfredo",
+    description: "Espagueti cremoso con pollo y salsa de crema licuada.",
+    servings: 4,
+    prep_time_minutes: 10,
+    cook_time_minutes: 25,
+    tags: "pasta, pollo, cremoso",
+    ingredients: [
+      { name: "Espagueti", quantity: 500, unit: "g" },
+      { name: "Crema", quantity: 1, unit: "lata" },
+      { name: "Pimienta", quantity: 1, unit: "al gusto" },
+      { name: "Knorsuiza", quantity: 1, unit: "al gusto" },
+      { name: "Pollo (en trocitos)", quantity: 2, unit: "pechugas" },
+      { name: "Sal", quantity: 1, unit: "al gusto" },
+    ],
+    instructions: [
+      { text: "Cocer el espagueti en agua con poca sal. Escurrir y reservar." },
+      { text: "Licuar la crema con pimienta y Knorsuiza." },
+      {
+        text: "Sazonar el pollo en trocitos con pimienta y sal, cocinar hasta que esté listo.",
+      },
+      {
+        text: "En un refractario combinar el espagueti y el pollo, agregar la crema licuada y mezclar bien.",
+      },
+    ],
+  },
+  {
+    title: "Tortas ahogadas",
+    description: "Salsa de chile guajillo con crema para bañar tortas.",
+    servings: 4,
+    prep_time_minutes: 15,
+    cook_time_minutes: 30,
+    tags: "tortas, salsa, mexicano, picante",
+    ingredients: [
+      { name: "Chiles guajillo", quantity: 8, unit: "" },
+      { name: "Chiles de árbol (opcional)", quantity: 2, unit: "" },
+      { name: "Dientes de ajo", quantity: 2, unit: "" },
+      { name: "Cebolla", quantity: 0.5, unit: "pieza" },
+      { name: "Tomates", quantity: 3, unit: "" },
+      { name: "Crema ácida o media crema", quantity: 1, unit: "bote mediano" },
+      { name: "Pierna española o lomo de cerdo", quantity: 500, unit: "g" },
+      { name: "Sal o Knorsuiza", quantity: 1, unit: "al gusto" },
+    ],
+    instructions: [
+      {
+        text: "Hervir juntos los chiles, ajo, cebolla y tomates en agua. Una vez hervidos, licuar.",
+      },
+      {
+        text: "Poner la salsa en una sartén honda y llevar a hervor. Sazonar con sal o Knorsuiza.",
+      },
+      {
+        text: "Al soltar el hervor, agregar la crema ácida o media crema. Batir constantemente.",
+      },
+      {
+        text: "Cocinar la pierna o lomo de cerdo en sartén con agua, sal y cebolla.",
+      },
+      {
+        text: "Puede sustituirse la carne por hamburguesa, jamón o solo aguacate.",
+      },
+    ],
+  },
+  {
+    title: "Pay de queso",
+    description: "Pastel de queso cremoso y fácil, listo en 50 minutos.",
+    servings: 8,
+    prep_time_minutes: 10,
+    cook_time_minutes: 50,
+    tags: "postre, queso, horno",
+    ingredients: [
+      { name: "Lechera grande", quantity: 1, unit: "lata" },
+      { name: "Huevos", quantity: 2, unit: "" },
+      { name: "Queso Philadelphia", quantity: 2, unit: "paquetes" },
+      { name: "Vainilla", quantity: 2, unit: "cdas" },
+    ],
+    instructions: [
+      {
+        text: "Moler todos los ingredientes en la licuadora hasta obtener mezcla homogénea.",
+      },
+      {
+        text: "Verter en un refractario previamente preparado con base de galleta.",
+      },
+      { text: "Hornear durante 50 minutos." },
+    ],
+  },
+  {
+    title: "Papas al horno con crema",
+    description: "Papas en capas con crema, catsup y queso al horno.",
+    servings: 4,
+    prep_time_minutes: 15,
+    cook_time_minutes: 40,
+    tags: "papas, horno, crema, guarnición",
+    ingredients: [
+      { name: "Papas", quantity: 4, unit: "" },
+      { name: "Crema de leche", quantity: 0.25, unit: "taza" },
+      { name: "Catsup", quantity: 0.25, unit: "taza" },
+      { name: "Mantequilla", quantity: 1, unit: "cdta" },
+      { name: "Queso rayado", quantity: 1, unit: "al gusto" },
+      { name: "Sal y pimienta", quantity: 1, unit: "al gusto" },
+    ],
+    instructions: [
+      { text: "Pelar las papas y cortar en láminas finas." },
+      { text: "Mezclar la crema con la catsup." },
+      {
+        text: "Colocar la mitad de las papas en el refractario, salpimentar. Agregar el resto y volver a salpimentar.",
+      },
+      {
+        text: "Verter la crema por encima, cubrir bien y tapar con papel de aluminio.",
+      },
+      { text: "Hornear a 250° durante 30 minutos." },
+      {
+        text: "Agregar queso rayado y mantequilla, hornear 10 minutos más sin el aluminio.",
+      },
+    ],
+  },
+];
+
 export function useRecipeSync() {
   const user = useAuthStore((state) => state.user);
   const {
@@ -22,7 +168,43 @@ export function useRecipeSync() {
   useEffect(() => {
     if (isDemo || !user) return;
 
-    recipeService.fetchRecipes(user.id).then(setRecipes);
+    recipeService.fetchRecipes(user.id).then(async (fetched) => {
+      if (fetched.length === 0) {
+        const seeded = await Promise.all(
+          SEED_RECIPES.map((r) =>
+            recipeService.addRecipe({
+              id: crypto.randomUUID(),
+              user_id: user.id,
+              title: r.title,
+              description: r.description || null,
+              image_url: null,
+              servings: r.servings || null,
+              prep_time_minutes: r.prep_time_minutes || null,
+              cook_time_minutes: r.cook_time_minutes || null,
+              tags: r.tags
+                .split(",")
+                .map((t) => t.trim())
+                .filter(Boolean),
+              ingredients: r.ingredients
+                .filter((i) => i.name.trim())
+                .map((i) => ({
+                  id: crypto.randomUUID(),
+                  name: i.name.trim(),
+                  quantity: Number(i.quantity) || 1,
+                  unit: i.unit.trim() || null,
+                })),
+              instructions: r.instructions
+                .map((s) => s.text.trim())
+                .filter(Boolean),
+              is_favorite: false,
+            }),
+          ),
+        );
+        setRecipes(seeded);
+      } else {
+        setRecipes(fetched);
+      }
+    });
 
     const onFocus = () => {
       recipeService.fetchRecipes(user.id).then(setRecipes);
