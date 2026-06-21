@@ -208,6 +208,221 @@ const SEED_RECIPES: Omit<RecipeFormValues, never>[] = [
       },
     ],
   },
+  {
+    title: "Pollo 'Cásate Conmigo'",
+    description:
+      "Pechugas de pollo selladas en cremosa salsa de tomates deshidratados y parmesano, acompañadas de papas y brócoli asados.",
+    servings: 4,
+    prep_time_minutes: 15,
+    cook_time_minutes: 30,
+    tags: "pollo, cremoso, parmesano, tomates deshidratados, horno",
+    ingredients: [
+      {
+        name: "Pechugas de pollo sin hueso, en filetes finos",
+        quantity: 600,
+        unit: "g",
+      },
+      { name: "Aceite de oliva (para sellar)", quantity: 15, unit: "ml" },
+      { name: "Harina de trigo (para enharinar)", quantity: 15, unit: "g" },
+      { name: "Sal y pimienta negra al gusto", quantity: 3, unit: "g" },
+      { name: "Sazonador italiano seco", quantity: 2, unit: "g" },
+      { name: "Mantequilla sin sal", quantity: 30, unit: "g" },
+      { name: "Ajo fresco picado", quantity: 10, unit: "g" },
+      { name: "Caldo de pollo", quantity: 120, unit: "ml" },
+      { name: "Crema para batir", quantity: 120, unit: "ml" },
+      {
+        name: "Tomates deshidratados en aceite, escurridos y en tiras",
+        quantity: 30,
+        unit: "g",
+      },
+      { name: "Queso parmesano rallado", quantity: 30, unit: "g" },
+      { name: "Papas cambray en mitades", quantity: 300, unit: "g" },
+      { name: "Floretes de brócoli o broccolini", quantity: 150, unit: "g" },
+      { name: "Aceite de oliva (para asar)", quantity: 15, unit: "ml" },
+      { name: "Perejil fresco picado (para decorar)", quantity: 5, unit: "g" },
+    ],
+    instructions: [
+      {
+        text: "Asar verduras: Precalentar el horno a 200°C. Mezclar las papas y el brócoli con aceite, sal y pimienta. Hornear 20-25 minutos hasta que estén tiernos y ligeramente dorados.",
+      },
+      {
+        text: "Preparar y sellar el pollo: Sazonar con sal, pimienta y sazonador italiano. Enharinar ligeramente. Calentar aceite en un sartén y sellar el pollo 4-5 minutos por lado hasta dorar. Retirar y reservar.",
+      },
+      {
+        text: "Saltear aromáticos: Bajar el fuego a medio, agregar mantequilla y ajo al sartén. Saltear 1 minuto hasta que esté fragante.",
+      },
+      {
+        text: "Hacer la salsa: Verter el caldo de pollo, raspando los trocitos del fondo. Agregar la crema y los tomates deshidratados. Llevar a hervor suave.",
+      },
+      {
+        text: "Terminar la salsa: Incorporar el queso parmesano y revolver hasta obtener una salsa suave y ligeramente espesa.",
+      },
+      {
+        text: "Combinar: Regresar el pollo a la salsa y dejar a fuego lento 1-2 minutos para calentar y bañar bien el pollo.",
+      },
+      {
+        text: "Servir: Servir el pollo con la salsa junto con las papas y el brócoli asados. Decorar con perejil fresco picado.",
+      },
+    ],
+  },
+  {
+    title: "Espagueti a la Carbonara",
+    description:
+      "Pasta italiana clásica con yemas de huevo, guanciale crujiente y queso Pecorino Romano.",
+    servings: 2,
+    prep_time_minutes: 10,
+    cook_time_minutes: 20,
+    tags: "pasta, italiana, carbonara, huevo, tocino",
+    ingredients: [
+      { name: "Espagueti", quantity: 200, unit: "g" },
+      { name: "Sal (para el agua de cocción)", quantity: 15, unit: "g" },
+      { name: "Agua de cocción de pasta reservada", quantity: 60, unit: "ml" },
+      { name: "Guanciale o panceta en cubos", quantity: 100, unit: "g" },
+      { name: "Yemas de huevo grandes", quantity: 3, unit: "piezas" },
+      { name: "Huevo entero grande", quantity: 1, unit: "pieza" },
+      { name: "Queso Pecorino Romano rallado", quantity: 50, unit: "g" },
+      {
+        name: "Pimienta negra recién molida (cantidad generosa)",
+        quantity: 4,
+        unit: "g",
+      },
+      {
+        name: "Guanciale/panceta extra crujiente (para decorar)",
+        quantity: 10,
+        unit: "g",
+      },
+    ],
+    instructions: [
+      {
+        text: "Cocer la pasta: Hervir agua con sal y cocer el espagueti al dente. Reservar aprox. 120 ml del agua de cocción antes de escurrir.",
+      },
+      {
+        text: "Dorar la carne: Cocinar el guanciale o panceta en un sartén a fuego medio hasta que esté crujiente. Retirar los trozos, dejando la grasa en el sartén. Apagar el fuego.",
+      },
+      {
+        text: "Preparar la mezcla de huevo: En un tazón, batir vigorosamente las yemas y el huevo entero con el queso Pecorino Romano y mucha pimienta negra hasta obtener una mezcla cremosa.",
+      },
+      {
+        text: "Combinar pasta y grasa: Agregar el espagueti escurrido y caliente al sartén con la grasa. Mezclar rápidamente para cubrir.",
+      },
+      {
+        text: "Emulsionar: Verter poco a poco la mezcla de huevo sobre la pasta, revolviendo continua y rápidamente (sin calor) para evitar que los huevos se cocinen de más.",
+      },
+      {
+        text: "Ajustar consistencia: Agregar una cucharada del agua de cocción caliente a la vez, revolviendo hasta obtener una salsa cremosa que cubra la pasta.",
+      },
+      {
+        text: "Servir: Transferir de inmediato a tazones. Cubrir con la carne crujiente, queso Pecorino Romano extra y pimienta al gusto.",
+      },
+    ],
+  },
+  {
+    title: "Camarones al Mojo de Ajo con Espárragos",
+    description:
+      "Camarones jugosos en mantequilla de ajo y limón, servidos con espárragos salteados.",
+    servings: 4,
+    prep_time_minutes: 10,
+    cook_time_minutes: 15,
+    tags: "camarones, ajo, limón, mantequilla, espárragos",
+    ingredients: [
+      {
+        name: "Camarones grandes pelados y desvenados",
+        quantity: 400,
+        unit: "g",
+      },
+      { name: "Mantequilla sin sal", quantity: 60, unit: "g" },
+      { name: "Ajo fresco picado (aprox. 4 dientes)", quantity: 15, unit: "g" },
+      { name: "Aceite de oliva", quantity: 15, unit: "ml" },
+      {
+        name: "Jugo de limón recién exprimido (aprox. 1 limón)",
+        quantity: 30,
+        unit: "ml",
+      },
+      { name: "Orégano seco", quantity: 1, unit: "g" },
+      { name: "Sal y pimienta negra al gusto", quantity: 3, unit: "g" },
+      { name: "Espárragos en trozos de 2-3 cm", quantity: 200, unit: "g" },
+      { name: "Perejil fresco picado (para decorar)", quantity: 5, unit: "g" },
+      { name: "Hojuelas de chile rojo (opcional)", quantity: 1, unit: "g" },
+    ],
+    instructions: [
+      {
+        text: "Saltear espárragos: Calentar aceite en un sartén grande a fuego medio-alto. Agregar los espárragos con una pizca de sal y saltear 3-5 minutos hasta que estén tiernos pero crujientes. Retirar y reservar.",
+      },
+      {
+        text: "Mantequilla con ajo: Bajar el fuego a medio. Agregar la mantequilla al sartén. Al derretirse, incorporar el ajo y el orégano, cocinar 1 minuto hasta que esté fragante.",
+      },
+      {
+        text: "Sazonar los camarones: Salpimentar los camarones.",
+      },
+      {
+        text: "Cocinar los camarones: Subir el fuego a medio-alto. Agregar los camarones en una sola capa. Cocinar 1-2 minutos por lado hasta que estén rosados y opacos.",
+      },
+      {
+        text: "Agregar limón y verduras: Retirar del fuego. Incorporar el jugo de limón y regresar los espárragos al sartén.",
+      },
+      {
+        text: "Mezclar: Revolver suavemente para bañar todo con la salsa de mantequilla de ajo y limón.",
+      },
+      {
+        text: "Servir: Transferir a tazones de inmediato. Decorar con perejil picado, hojuelas de chile (si se desea) y rodajas de limón.",
+      },
+    ],
+  },
+  {
+    title: "Pollo con Brócoli al Wok",
+    description:
+      "Tiras de pollo y brócoli salteados en salsa agridulce de soya, ajo y jengibre.",
+    servings: 4,
+    prep_time_minutes: 15,
+    cook_time_minutes: 20,
+    tags: "pollo, brócoli, wok, soya, asiático, jengibre",
+    ingredients: [
+      {
+        name: "Pechuga de pollo en tiras de 2-3 cm",
+        quantity: 450,
+        unit: "g",
+      },
+      { name: "Maizena", quantity: 15, unit: "g" },
+      { name: "Aceite de oliva o aceite de sésamo", quantity: 15, unit: "ml" },
+      { name: "Floretes pequeños de brócoli", quantity: 300, unit: "g" },
+      { name: "Salsa de soya baja en sodio", quantity: 60, unit: "ml" },
+      { name: "Agua o caldo de pollo", quantity: 30, unit: "ml" },
+      { name: "Azúcar morena o miel", quantity: 30, unit: "g" },
+      { name: "Jengibre fresco picado", quantity: 5, unit: "g" },
+      { name: "Ajo fresco picado", quantity: 10, unit: "g" },
+      { name: "Vinagre de arroz", quantity: 15, unit: "ml" },
+      { name: "Aceite de sésamo tostado", quantity: 5, unit: "ml" },
+      {
+        name: "Semillas de sésamo tostadas (para decorar)",
+        quantity: 3,
+        unit: "g",
+      },
+      { name: "Cebollín en rodajas (para decorar)", quantity: 10, unit: "g" },
+    ],
+    instructions: [
+      {
+        text: "Preparar el pollo: Mezclar las tiras de pollo con la maizena hasta cubrir ligeramente. Reservar.",
+      },
+      {
+        text: "Preparar la salsa: En un tazón, mezclar la soya, el agua/caldo, el azúcar/miel, el jengibre, el ajo, el vinagre de arroz y el aceite de sésamo.",
+      },
+      {
+        text: "Cocinar el pollo: Calentar aceite en un wok o sartén grande a fuego medio-alto. Agregar el pollo y cocinar 5-7 minutos hasta que esté dorado y bien cocido. Retirar y reservar.",
+      },
+      {
+        text: "Cocinar el brócoli: En el mismo sartén, agregar los floretes de brócoli. Cocinar 3-5 minutos, agregando un chorrito de agua si es necesario, hasta que estén tiernos pero crujientes.",
+      },
+      {
+        text: "Combinar y espesar: Regresar el pollo al sartén con el brócoli. Verter la salsa preparada sobre todo.",
+      },
+      {
+        text: "Hervir: Llevar a hervor moviendo constantemente hasta que la salsa espese y quede pegajosa y brillante (1-2 minutos).",
+      },
+      {
+        text: "Servir: Servir de inmediato sobre arroz. Decorar con semillas de sésamo tostadas y cebollín en rodajas.",
+      },
+    ],
+  },
 ];
 
 export function useRecipeSync() {
