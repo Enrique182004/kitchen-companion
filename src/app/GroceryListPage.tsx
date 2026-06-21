@@ -9,6 +9,8 @@ import {
   Tag,
   ChevronDown,
 } from "lucide-react";
+import { useAuthStore } from "@/features/auth/auth.store";
+import { pantryService } from "@/features/pantry/services/pantry.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,6 +35,9 @@ import { LibrarySheet } from "@/features/library/components/LibrarySheet";
 import type { GroceryItem, LibraryItem } from "@/types";
 import type { GroceryItemFormValues } from "@/lib/zod-schemas";
 import type { SortBy } from "@/types";
+
+const isDemo = !import.meta.env.VITE_SUPABASE_URL;
+const EMPTY_LIST: GroceryItem[] = [];
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
   { value: "name", label: "Name" },
@@ -230,7 +235,7 @@ export function GroceryListPage() {
   const activeListId = useGroceryStore((s) => s.activeListId);
   const defaultItems = useGroceryStore((s) => s.items);
   const localListItems = useGroceryStore(
-    (s) => s.localLists[s.activeListId] ?? [],
+    (s) => s.localLists[s.activeListId] ?? EMPTY_LIST,
   );
   const addLocalItem = useGroceryStore((s) => s.addLocalItem);
   const removeLocalItem = useGroceryStore((s) => s.removeLocalItem);
@@ -242,8 +247,11 @@ export function GroceryListPage() {
   const restoreItems = useGroceryStore((s) => s.restoreItems);
   const { add, update, remove, markPurchased, bulkMarkPurchased } =
     useGroceryList();
-  const addToPantry = usePantryStore((s) => s.addItem);
+  const pantryItems = usePantryStore((s) => s.items);
+  const pantryAddLocal = usePantryStore((s) => s.addItem);
+  const pantrySetItems = usePantryStore((s) => s.setItems);
   const saveToLibrary = useLibraryStore((s) => s.saveFromForm);
+  const user = useAuthStore((s) => s.user);
 
   // For default list: use the existing hook (reads state.items). For local lists: compute inline.
   const defaultFilteredItems = useFilteredItems();
@@ -285,24 +293,35 @@ export function GroceryListPage() {
     } else {
       updateLocalItem(activeListId, id, { purchased });
     }
-    if (purchased) {
-      const item = items.find((i) => i.id === id);
-      if (item) {
-        toast(`"${item.name}" marked as purchased`, {
-          action: {
-            label: "Add to pantry",
-            onClick: () =>
-              addToPantry({
-                name: item.name,
-                quantity: item.quantity,
-                unit: item.unit ?? "",
-                expiration_date: "",
-              }),
-          },
-          duration: 5000,
-        });
-      }
+    if (!purchased) return;
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+
+    // Auto-add to pantry
+    if (isDemo || !user) {
+      pantryAddLocal({
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit ?? "",
+        expiration_date: "",
+        category: "",
+      });
+    } else {
+      pantryService
+        .addItem({
+          user_id: user.id,
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.unit ?? null,
+          category_id: null,
+          expiration_date: null,
+        })
+        .then((newItem) => {
+          pantrySetItems([newItem, ...usePantryStore.getState().items]);
+        })
+        .catch(() => {});
     }
+    toast.success(`"${item.name}" added to pantry`);
   };
 
   const handleDelete = (item: GroceryItem) => {
@@ -322,6 +341,17 @@ export function GroceryListPage() {
   };
 
   const handleAdd = async (values: GroceryItemFormValues) => {
+    // Warn if item is already in pantry
+    const inPantry = pantryItems.find(
+      (p) => p.name.toLowerCase() === values.name.trim().toLowerCase(),
+    );
+    if (inPantry) {
+      toast(`"${values.name}" is already in your pantry!`, {
+        description: "You might already have this at home.",
+        duration: 4000,
+      });
+    }
+
     if (isDefault) {
       await add(values); // saveToLibrary already called inside use-grocery-list
     } else {
@@ -606,6 +636,7 @@ export function GroceryListPage() {
         onSubmit={editingItem ? handleEdit : handleAdd}
         defaultValues={editingItem ?? undefined}
         title={editingItem ? "Edit Item" : "Add Item"}
+        categories={categories}
       />
 
       <LibrarySheet

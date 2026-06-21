@@ -10,9 +10,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PANTRY_CATEGORIES } from "../pantry.store";
 import type { PantryFormValues } from "../pantry.store";
 import type { PantryItem } from "@/types";
 
@@ -21,6 +29,7 @@ const pantrySchema = z.object({
   quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
   unit: z.string(),
   expiration_date: z.string(),
+  category: z.string(),
 });
 
 interface Props {
@@ -36,6 +45,7 @@ const EMPTY: PantryFormValues = {
   quantity: 1,
   unit: "",
   expiration_date: "",
+  category: "",
 };
 
 export function PantryForm({
@@ -49,11 +59,15 @@ export function PantryForm({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<PantryFormValues>({
     resolver: zodResolver(pantrySchema) as Resolver<PantryFormValues>,
     defaultValues: EMPTY,
   });
+
+  const categoryValue = watch("category");
 
   useEffect(() => {
     reset(
@@ -63,6 +77,7 @@ export function PantryForm({
             quantity: defaultValues.quantity,
             unit: defaultValues.unit ?? "",
             expiration_date: defaultValues.expiration_date ?? "",
+            category: defaultValues.category_id ?? "",
           }
         : EMPTY,
     );
@@ -117,6 +132,28 @@ export function PantryForm({
                 placeholder="e.g. oz"
               />
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <Label>Category</Label>
+            <Select
+              value={categoryValue}
+              onValueChange={(v) =>
+                setValue("category", v && v !== "none" ? v : "")
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select category…" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No category</SelectItem>
+                {PANTRY_CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1">

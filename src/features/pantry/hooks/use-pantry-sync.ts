@@ -26,23 +26,23 @@ export function usePantrySync() {
   }, [user, setItems]);
 
   const add = async (values: PantryFormValues) => {
-    if (isDemo) {
+    if (isDemo || !user) {
       addItem(values);
       return;
     }
     const item = await pantryService.addItem({
-      user_id: user!.id,
+      user_id: user.id,
       name: values.name.trim(),
       quantity: Number(values.quantity) || 1,
       unit: values.unit.trim() || null,
-      category_id: null,
+      category_id: values.category || null,
       expiration_date: values.expiration_date || null,
     });
-    setItems([item, ...items]);
+    setItems([item, ...usePantryStore.getState().items]);
   };
 
   const update = async (id: string, values: PantryFormValues) => {
-    if (isDemo) {
+    if (isDemo || !user) {
       updateItem(id, values);
       return;
     }
@@ -50,31 +50,31 @@ export function usePantrySync() {
       name: values.name.trim(),
       quantity: Number(values.quantity) || 1,
       unit: values.unit.trim() || null,
+      category_id: values.category || null,
       expiration_date: values.expiration_date || null,
     });
-    setItems(items.map((i) => (i.id === id ? item : i)));
+    setItems(
+      usePantryStore.getState().items.map((i) => (i.id === id ? item : i)),
+    );
   };
 
   const remove = async (id: string) => {
-    if (isDemo) {
+    if (isDemo || !user) {
       removeItem(id);
       return;
     }
     await pantryService.deleteItem(id);
-    setItems(items.filter((i) => i.id !== id));
+    setItems(usePantryStore.getState().items.filter((i) => i.id !== id));
   };
 
   const restore = async (item: PantryItem) => {
-    if (isDemo) {
+    if (isDemo || !user) {
       restoreItem(item);
       return;
     }
-    const { id, created_at, updated_at, ...rest } = item;
-    void id;
-    void created_at;
-    void updated_at;
+    const { id: _id, created_at: _ca, updated_at: _ua, ...rest } = item;
     const restored = await pantryService.addItem(rest);
-    setItems([restored, ...items]);
+    setItems([restored, ...usePantryStore.getState().items]);
   };
 
   return {

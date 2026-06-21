@@ -44,7 +44,14 @@ export function PantryItemRow({ item, onEdit, onDelete }: Props) {
   return (
     <div className="flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
       <div className="min-w-0 flex-1">
-        <p className="font-medium">{item.name}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="font-medium">{item.name}</p>
+          {item.category_id && (
+            <span className="rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
+              {item.category_id}
+            </span>
+          )}
+        </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-2">
           <span className="text-sm text-muted-foreground">
             {item.quantity}

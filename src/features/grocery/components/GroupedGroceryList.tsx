@@ -77,6 +77,8 @@ export function GroupedGroceryList({
     }),
   );
 
+  const activeIds = useMemo(() => activeItems.map((i) => i.id), [activeItems]);
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -134,7 +136,7 @@ export function GroupedGroceryList({
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={activeItems.map((i) => i.id)}
+          items={activeIds}
           strategy={verticalListSortingStrategy}
         >
           {grouped ? (

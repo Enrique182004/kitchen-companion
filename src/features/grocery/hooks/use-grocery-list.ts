@@ -11,9 +11,11 @@ const isDemo = !import.meta.env.VITE_SUPABASE_URL;
 
 export function useGroceryList() {
   const user = useAuthStore((state) => state.user);
-  const { setItems, setLoading, addItem, updateItem, removeItem } =
-    useGroceryStore();
-  const saveToLibrary = useLibraryStore((s) => s.saveFromForm);
+  const setItems = useGroceryStore((s) => s.setItems);
+  const setLoading = useGroceryStore((s) => s.setLoading);
+  const addItem = useGroceryStore((s) => s.addItem);
+  const updateItem = useGroceryStore((s) => s.updateItem);
+  const removeItem = useGroceryStore((s) => s.removeItem);
 
   useEffect(() => {
     if (isDemo || !user) return;
@@ -22,6 +24,7 @@ export function useGroceryList() {
     groceryService
       .fetchItems(user.id)
       .then(setItems)
+      .catch(() => {})
       .finally(() => setLoading(false));
 
     const channel = supabase
@@ -34,7 +37,11 @@ export function useGroceryList() {
           table: "grocery_items",
           filter: `user_id=eq.${user.id}`,
         },
-        () => groceryService.fetchItems(user.id).then(setItems),
+        () =>
+          groceryService
+            .fetchItems(user.id)
+            .then(setItems)
+            .catch(() => {}),
       )
       .subscribe();
 
@@ -44,7 +51,8 @@ export function useGroceryList() {
   }, [user, setItems, setLoading]);
 
   const add = async (values: GroceryItemFormValues) => {
-    saveToLibrary(values);
+    // Imperative read — no hook subscription to library store
+    useLibraryStore.getState().saveFromForm(values);
 
     if (isDemo) {
       addItem({
@@ -63,9 +71,10 @@ export function useGroceryList() {
       });
       return;
     }
+    if (!user) return;
     return groceryService.addItem({
       ...(values as Omit<GroceryItemInsert, "user_id">),
-      user_id: user!.id,
+      user_id: user.id,
     });
   };
 

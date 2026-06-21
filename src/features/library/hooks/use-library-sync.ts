@@ -43,6 +43,21 @@ export function useLibrarySync() {
     };
   }, [user, setItems]);
 
+  // Merge a Supabase-returned item into the local store without a full refetch.
+  // Matches by id first, then by name (for upserts where the id may differ).
+  const upsertIntoStore = (item: LibraryItem, matchName?: string) => {
+    const cur = useLibraryStore.getState().items;
+    const matchLower = (matchName ?? item.name).toLowerCase();
+    const idx = cur.findIndex(
+      (i) => i.id === item.id || i.name.toLowerCase() === matchLower,
+    );
+    setItems(
+      idx >= 0
+        ? cur.map((i) => (i.id === cur[idx].id ? item : i))
+        : [item, ...cur],
+    );
+  };
+
   const handleCreateItem = async (fields: LibraryItemFields) => {
     if (isDemo || !user) {
       createItem(fields);
@@ -59,7 +74,7 @@ export function useLibrarySync() {
       last_added: new Date().toISOString(),
       user_id: user.id,
     });
-    setItems(await libraryService.fetchItems(user.id));
+    upsertIntoStore(item);
     return item;
   };
 
@@ -94,7 +109,7 @@ export function useLibrarySync() {
       ...item,
       user_id: user.id,
     });
-    setItems(await libraryService.fetchItems(user.id));
+    upsertIntoStore(restored);
     return restored;
   };
 
@@ -103,7 +118,8 @@ export function useLibrarySync() {
       toggleFavoriteStore(id);
       return;
     }
-    const current = items.find((i) => i.id === id);
+    // Read from store at call time (not stale closure) to get current is_favorite
+    const current = useLibraryStore.getState().items.find((i) => i.id === id);
     if (!current) return;
     const updated = await libraryService.toggleFavorite(
       id,
@@ -118,7 +134,7 @@ export function useLibrarySync() {
       saveFromFormStore(values);
       return;
     }
-    await libraryService.upsertItem({
+    const item = await libraryService.upsertItem({
       name: values.name,
       unit: values.unit ?? "",
       estimated_price: values.estimated_price ?? null,
@@ -129,7 +145,7 @@ export function useLibrarySync() {
       last_added: new Date().toISOString(),
       user_id: user.id,
     });
-    setItems(await libraryService.fetchItems(user.id));
+    upsertIntoStore(item, values.name);
   };
 
   return {

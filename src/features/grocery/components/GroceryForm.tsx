@@ -24,9 +24,8 @@ import {
   groceryItemSchema,
   type GroceryItemFormValues,
 } from "@/lib/zod-schemas";
-import { useCategories } from "../hooks/use-categories";
 import { useLibraryStore } from "@/features/library/library.store";
-import type { GroceryItem, LibraryItem } from "@/types";
+import type { Category, GroceryItem, LibraryItem } from "@/types";
 
 interface Props {
   open: boolean;
@@ -34,6 +33,7 @@ interface Props {
   onSubmit: (values: GroceryItemFormValues) => Promise<void>;
   defaultValues?: Partial<GroceryItem>;
   title?: string;
+  categories: Category[];
 }
 
 export function GroceryForm({
@@ -42,8 +42,8 @@ export function GroceryForm({
   onSubmit,
   defaultValues,
   title = "Add Item",
+  categories,
 }: Props) {
-  const { categories } = useCategories();
   const libraryItems = useLibraryStore((s) => s.items);
   const [suggestions, setSuggestions] = useState<LibraryItem[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
