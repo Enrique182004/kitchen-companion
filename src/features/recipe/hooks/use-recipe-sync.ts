@@ -423,6 +423,98 @@ const SEED_RECIPES: Omit<RecipeFormValues, never>[] = [
       },
     ],
   },
+  {
+    title: "Carbonara Cremosa con Tocino",
+    description:
+      "Tocino crujiente, champiñones y cebolla salteados y bañados en una rica salsa cremosa de huevo y parmesano. ¡Lista en 30 minutos!",
+    servings: 6,
+    prep_time_minutes: 15,
+    cook_time_minutes: 15,
+    tags: "pasta, tocino, carbonara, cremoso, champiñones",
+    ingredients: [
+      { name: "Huevos", quantity: 2, unit: "piezas" },
+      { name: "Crema para batir", quantity: 60, unit: "ml" },
+      { name: "Queso parmesano rallado", quantity: 80, unit: "ml" },
+      { name: "Perejil fresco picado", quantity: 1, unit: "cdta" },
+      { name: "Sal", quantity: 0.25, unit: "cdta" },
+      { name: "Hojuelas de chile rojo", quantity: 0.5, unit: "cdta" },
+      { name: "Tocino", quantity: 225, unit: "g" },
+      { name: "Champiñones picados (opcional)", quantity: 3, unit: "piezas" },
+      { name: "Cebolla pequeña picada (opcional)", quantity: 1, unit: "pieza" },
+      { name: "Pasta", quantity: 225, unit: "g" },
+    ],
+    instructions: [
+      {
+        text: "Mezclar en un tazón los huevos, la crema, el parmesano, el perejil, la sal y las hojuelas de chile. Reservar.",
+      },
+      {
+        text: "Freír el tocino hasta que esté crujiente. Desmenuzar y reservar.",
+      },
+      {
+        text: "Usando 1-2 cdas de la grasa del tocino, saltear la cebolla y los champiñones hasta que la cebolla esté traslúcida y dorada.",
+      },
+      {
+        text: "Escurrir la pasta cocida y, mientras aún esté caliente, agregar la cebolla y los champiñones salteados.",
+      },
+      {
+        text: "Verter la mezcla de crema sobre la pasta y revolver a fuego bajo 1-2 minutos. Importante: usar fuego bajo para evitar que los huevos se cuezan de más.",
+      },
+      {
+        text: "Incorporar el tocino desmenuzado y servir con parmesano adicional.",
+      },
+    ],
+  },
+  {
+    title: "Pasta de Pastel de Pollo",
+    description:
+      "Una variante rápida y reconfortante del pastel de pollo clásico: todo el sabor cremoso y sustancioso pero con fideos en lugar de corteza. Lista en 30 minutos.",
+    servings: 6,
+    prep_time_minutes: 10,
+    cook_time_minutes: 20,
+    tags: "pasta, pollo, cremoso, verduras, reconfortante, fideos",
+    ingredients: [
+      { name: "Pechuga de pollo en cubos", quantity: 450, unit: "g" },
+      { name: "Mantequilla sin sal", quantity: 2, unit: "cdas" },
+      {
+        name: "Cebolla picada (aprox. 1/2 cebolla mediana)",
+        quantity: 1,
+        unit: "taza",
+      },
+      { name: "Caldo de pollo en polvo", quantity: 2, unit: "cdtas" },
+      { name: "Ajo en polvo", quantity: 1, unit: "cdta" },
+      { name: "Pimentón (paprika)", quantity: 0.5, unit: "cdta" },
+      { name: "Verduras mixtas congeladas", quantity: 340, unit: "g" },
+      {
+        name: "Crema de pollo en lata",
+        quantity: 2,
+        unit: "latas (298 g c/u)",
+      },
+      { name: "Leche entera", quantity: 1, unit: "taza" },
+      { name: "Sal y pimienta al gusto", quantity: 1, unit: "al gusto" },
+      {
+        name: "Fideos anchos de huevo (egg noodles)",
+        quantity: 225,
+        unit: "g",
+      },
+    ],
+    instructions: [
+      {
+        text: "Derretir la mantequilla en un sartén grande a fuego medio-alto. Agregar la cebolla y cocinar hasta que esté tierna, aprox. 3-4 minutos.",
+      },
+      {
+        text: "Agregar el pollo en cubos con el caldo en polvo, el ajo en polvo y el pimentón. Cocinar moviendo frecuentemente hasta que esté dorado y casi cocido, aprox. 8-10 minutos.",
+      },
+      {
+        text: "Agregar las verduras mixtas congeladas y cocinar hasta descongelar. Verter la crema de pollo y la leche; sazonar con sal y pimienta. Cocinar a fuego bajo 8-10 minutos hasta que el pollo esté completamente cocido.",
+      },
+      {
+        text: "Mientras tanto, cocer los fideos según las instrucciones del paquete. Agregar los fideos cocidos al sartén y mezclar bien para cubrir.",
+      },
+      {
+        text: "Servir de inmediato con sazonadores adicionales al gusto.",
+      },
+    ],
+  },
 ];
 
 export function useRecipeSync() {
