@@ -168,13 +168,22 @@ export function useRecipeSync() {
   useEffect(() => {
     if (isDemo || !user) return;
 
-    recipeService.fetchRecipes(user.id).then(async (fetched) => {
-      if (fetched.length === 0) {
-        const seeded = await Promise.all(
-          SEED_RECIPES.map((r) =>
-            recipeService.addRecipe({
+    const userId = user.id;
+
+    recipeService
+      .fetchRecipes(userId)
+      .then(async (fetched) => {
+        if (fetched.length > 0) {
+          setRecipes(fetched);
+          return;
+        }
+        // Seed default recipes one at a time so a single failure doesn't block others
+        const results: Recipe[] = [];
+        for (const r of SEED_RECIPES) {
+          try {
+            const saved = await recipeService.addRecipe({
               id: crypto.randomUUID(),
-              user_id: user.id,
+              user_id: userId,
               title: r.title,
               description: r.description || null,
               image_url: null,
@@ -197,17 +206,21 @@ export function useRecipeSync() {
                 .map((s) => s.text.trim())
                 .filter(Boolean),
               is_favorite: false,
-            }),
-          ),
-        );
-        setRecipes(seeded);
-      } else {
-        setRecipes(fetched);
-      }
-    });
+            });
+            results.push(saved);
+          } catch (e) {
+            console.error("[recipe seed] failed to save", r.title, e);
+          }
+        }
+        setRecipes(results);
+      })
+      .catch((e) => console.error("[recipe fetch] failed", e));
 
     const onFocus = () => {
-      recipeService.fetchRecipes(user.id).then(setRecipes);
+      recipeService
+        .fetchRecipes(userId)
+        .then(setRecipes)
+        .catch(() => {});
     };
     window.addEventListener("focus", onFocus);
 
