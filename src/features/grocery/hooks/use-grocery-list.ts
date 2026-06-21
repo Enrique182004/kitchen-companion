@@ -4,6 +4,7 @@ import { useAuthStore } from "@/features/auth/auth.store";
 import { useGroceryStore } from "../grocery.store";
 import { useLibraryStore } from "@/features/library/library.store";
 import { groceryService } from "../services/grocery.service";
+import { libraryService } from "@/features/library/services/library.service";
 import type { GroceryItemFormValues } from "@/lib/zod-schemas";
 import type { GroceryItemInsert, GroceryItemUpdate } from "@/types";
 
@@ -51,7 +52,7 @@ export function useGroceryList() {
   }, [user, setItems, setLoading]);
 
   const add = async (values: GroceryItemFormValues) => {
-    // Imperative read — no hook subscription to library store
+    // Update local library store first (handles times_added increment)
     useLibraryStore.getState().saveFromForm(values);
 
     if (isDemo) {
@@ -72,6 +73,33 @@ export function useGroceryList() {
       return;
     }
     if (!user) return;
+
+    // Persist library item to Supabase in background so it survives a full refetch
+    const localItem = useLibraryStore
+      .getState()
+      .items.find((i) => i.name.toLowerCase() === values.name.toLowerCase());
+    if (localItem) {
+      libraryService
+        .upsertItem({
+          name: localItem.name,
+          unit: localItem.unit,
+          estimated_price: localItem.estimated_price,
+          store: localItem.store,
+          notes: localItem.notes,
+          is_favorite: localItem.is_favorite,
+          times_added: localItem.times_added,
+          last_added: localItem.last_added,
+          user_id: user.id,
+        })
+        .then((saved) => {
+          const cur = useLibraryStore.getState().items;
+          useLibraryStore
+            .getState()
+            .setItems(cur.map((i) => (i.id === localItem.id ? saved : i)));
+        })
+        .catch(() => {});
+    }
+
     return groceryService.addItem({
       ...(values as Omit<GroceryItemInsert, "user_id">),
       user_id: user.id,
